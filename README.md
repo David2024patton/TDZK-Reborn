@@ -1,20 +1,49 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# TDZK-Reborn
 
-# Run and deploy your AI Studio app
+**Taenaria Derivia Zallus Kitara** (TDZK-Reborn) is a modern web-based implementation of a classic space strategy game interface. Built with React, Vite, and Tailwind CSS, it features a retro-futuristic design with dynamic starfield animations and a responsive layout.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1S3yvd-qcOjWCv61hTVAYFyl3IdcM2ep5
+- **Immersive UI**: Custom retro-styled interface with a dynamic starfield background.
+- **Interactive Components**:
+    - Login System
+    - News Feed
+    - Real-time Server Clock
+    - Hall of Fame & Statistics
+    - In-game Help System
+- **Modern Tech Stack**:
+    - [React](https://react.dev/)
+    - [Vite](https://vitejs.dev/)
+    - [Tailwind CSS](https://tailwindcss.com/)
 
-## Run Locally
+## Getting Started
 
-**Prerequisites:**  Node.js
+### Prerequisites
 
+- Node.js (v18 or higher recommended)
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/David2024patton/TDZK-Reborn.git
+   cd TDZK-Reborn
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open your browser and navigate to `http://localhost:3000` (or the port shown in your terminal).
+
+## Scripts
+
+- `npm run dev`: Starts the development server.
+- `npm run build`: Builds the app for production.
+- `npm run preview`: Preview the production build locally.
