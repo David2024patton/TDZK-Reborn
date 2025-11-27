@@ -728,24 +728,7 @@ export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: Sh
                         </div>
                     )}
 
-                    {!isDocked && (
-                        <div className="w-full bg-[#0b131e]/80 border border-[#223344] rounded-sm p-3 shadow-lg backdrop-blur-sm">
-                            <div className="text-[#ff5555] font-bold text-[11px] mb-2 uppercase tracking-wide border-b border-[#442222] pb-1">
-                                Forces in Sector
-                            </div>
-                            <div className="flex justify-between items-center text-[10px] text-[#8899aa]">
-                                <div>
-                                    <span className="text-white font-bold">Owner:</span> <span className="text-[#aaccff]">(0-0)</span>
-                                </div>
-                                <div className="flex gap-2">
-                                    <span>Sct: <span className="text-white">50</span></span>
-                                    <span>Com: <span className="text-white">200</span></span>
-                                    <span>EMP: <span className="text-white">10</span></span>
-                                </div>
-                                <button className="text-red-400 hover:text-red-200 font-bold uppercase">[ATTACK]</button>
-                            </div>
-                        </div>
-                    )}
+
 
                     {!isDocked && (
                         <PlanetEntity
@@ -840,6 +823,25 @@ export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: Sh
                             )}
                         </div>
                     </div>
+
+                    {!isDocked && (
+                        <div className="w-full bg-[#0b131e]/80 border border-[#223344] rounded-sm p-3 shadow-lg backdrop-blur-sm">
+                            <div className="text-[#ff5555] font-bold text-[11px] mb-2 uppercase tracking-wide border-b border-[#442222] pb-1">
+                                Forces in Sector
+                            </div>
+                            <div className="flex justify-between items-center text-[10px] text-[#8899aa]">
+                                <div>
+                                    <span className="text-white font-bold">Owner:</span> <span className="text-[#aaccff]">(0-0)</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <span>Sct: <span className="text-white">50</span></span>
+                                    <span>Com: <span className="text-white">200</span></span>
+                                    <span>EMP: <span className="text-white">10</span></span>
+                                </div>
+                                <button className="text-red-400 hover:text-red-200 font-bold uppercase">[ATTACK]</button>
+                            </div>
+                        </div>
+                    )}
 
                     {!isDocked && (
                         <div className="w-full bg-gradient-to-b from-[#112233] to-[#080c14] border border-[#334455] rounded-sm shadow-lg overflow-hidden mt-2 opacity-90 hover:opacity-100 transition-opacity backdrop-blur-sm">
