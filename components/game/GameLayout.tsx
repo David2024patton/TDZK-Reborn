@@ -12,7 +12,7 @@ interface GameLayoutProps {
 }
 
 type PanelMode = 'docked' | 'float';
-export type ViewType = 'sector' | 'system' | 'galaxy' | 'help' | 'alliance' | 'news' | 'notices' | 'online' | 'stats' | 'bounties' | 'rankings' | 'forces' | 'planets' | 'webboard';
+export type ViewType = 'sector' | 'system' | 'galaxy' | 'help' | 'alliance' | 'alliance_list' | 'news' | 'notices' | 'online' | 'stats' | 'bounties' | 'rankings' | 'forces' | 'planets' | 'webboard';
 
 export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
     // Global Game State

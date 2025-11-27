@@ -20,6 +20,7 @@ import { OnlinePlayersView } from './OnlinePlayersView';
 import { NewsView } from './NewsView';
 import { NoticesView } from './NoticesView';
 import { ShipData } from './types';
+import { CombatView } from './CombatView';
 
 // --- Helper Components ---
 
@@ -32,22 +33,34 @@ interface ActionModalProps {
     type: 'attack' | 'raid';
     target: any;
     onClose: () => void;
+    onConfirm?: () => void;
 }
 
-const ActionModal: React.FC<ActionModalProps> = ({ type, target, onClose }) => {
+const ActionModal: React.FC<ActionModalProps> = ({ type, target, onClose, onConfirm }) => {
     const isRaid = type === 'raid';
-    const title = isRaid ? "Tactical Raid" : "Engage Enemy";
-    const actionLabel = isRaid ? "BEGIN RAID" : "ATTACK SHIP";
+    const isPlanet = !!target.population;
+
+    let title = "Engage Enemy";
+    if (isRaid) title = "Tactical Raid";
+    else if (isPlanet) title = "ENGAGE PLANET";
+
+    let actionLabel = "ATTACK SHIP";
+    if (isRaid) actionLabel = "BEGIN RAID";
+    else if (isPlanet) actionLabel = "ATTACK PLANET";
 
     // Derived display data
     const name = target.name || target.shipName || "Unknown Target";
-    const sub = target.sub || target.playerName || "Sector Entity";
+    const sub = target.sub || target.playerName || (target.ownerName ? `Owner: ${target.ownerName}` : "Sector Entity");
     const alliance = target.guild || target.allianceName || (isRaid ? "Neutral Target" : "Independent");
     const level = target.level || target.shipLevel || "Unknown";
 
     const bannerSeed = name.replace(/\s/g, '');
     const allianceTagUrl = `https://picsum.photos/seed/${alliance}/50/20`;
-    const targetBannerUrl = `https://picsum.photos/seed/${bannerSeed}/150/20`;
+
+    // Use a different image source or seed for planets to distinguish them
+    const targetBannerUrl = isPlanet
+        ? `https://picsum.photos/seed/${bannerSeed}_planet/150/20`
+        : `https://picsum.photos/seed/${bannerSeed}/150/20`;
 
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
@@ -98,7 +111,10 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, target, onClose }) => {
                             <button onClick={onClose} className="px-4 py-1 border border-[#662222] text-[#884444] hover:bg-[#220a0a] hover:text-[#aa6666] text-[10px] uppercase transition-colors">
                                 Abort
                             </button>
-                            <button className="px-6 py-1.5 bg-[#550000] border border-[#ff0000] text-white hover:bg-[#880000] hover:shadow-[0_0_15px_rgba(255,0,0,0.6)] text-[11px] font-bold uppercase tracking-widest transition-all">
+                            <button
+                                onClick={onConfirm}
+                                className="px-6 py-1.5 bg-[#550000] border border-[#ff0000] text-white hover:bg-[#880000] hover:shadow-[0_0_15px_rgba(255,0,0,0.6)] text-[11px] font-bold uppercase tracking-widest transition-all"
+                            >
                                 {actionLabel}
                             </button>
                         </div>
@@ -209,9 +225,17 @@ interface CenterPanelProps {
 export const CenterPanel: React.FC<CenterPanelProps> = ({ view, currentSector, onSystemSelect, onNavigate }) => {
     const [examineTarget, setExamineTarget] = useState<ShipData | null>(null);
     const [actionTarget, setActionTarget] = useState<{ type: 'attack' | 'raid', data: any } | null>(null);
+    const [combatTarget, setCombatTarget] = useState<any | null>(null);
 
     const handleTriggerAction = (type: 'attack' | 'raid', target: any) => {
-        setActionTarget({ type, data: target });
+        // Only skip the "Engage Enemy" screen (ActionModal) for player ships
+        const isShip = target.shipName || target.playerName;
+
+        if (type === 'attack' && isShip) {
+            setCombatTarget(target);
+        } else {
+            setActionTarget({ type, data: target });
+        }
     };
 
     return (
@@ -226,6 +250,7 @@ export const CenterPanel: React.FC<CenterPanelProps> = ({ view, currentSector, o
             {view === 'system' && <SystemMap currentSector={currentSector} onNavigateToSector={onSystemSelect} />}
             {view === 'galaxy' && <GalaxyMap />}
             {view === 'alliance' && <AllianceView onNavigate={onNavigate} />}
+            {view === 'alliance_list' && <AllianceView onNavigate={onNavigate} initialTab="list" />}
             {view === 'news' && <NewsView />}
             {view === 'notices' && <NoticesView />}
             {view === 'online' && <OnlinePlayersView />}
@@ -253,6 +278,17 @@ export const CenterPanel: React.FC<CenterPanelProps> = ({ view, currentSector, o
                     type={actionTarget.type}
                     target={actionTarget.data}
                     onClose={() => setActionTarget(null)}
+                    onConfirm={() => {
+                        setActionTarget(null);
+                        setCombatTarget(actionTarget.data);
+                    }}
+                />
+            )}
+
+            {combatTarget && (
+                <CombatView
+                    target={combatTarget}
+                    onClose={() => setCombatTarget(null)}
                 />
             )}
         </div>

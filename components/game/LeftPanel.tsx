@@ -96,7 +96,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({ isFloating = false, onNavi
               "DIVIDER",
               { label: "Stats/Options", action: () => onNavigate?.('stats') },
               { label: "Alliance", action: () => onNavigate?.('alliance') },
-              { label: "Alliance List", action: () => onNavigate?.('alliance') },
+              { label: "Alliance List", action: () => onNavigate?.('alliance_list') },
               { label: "Bounties", action: () => onNavigate?.('bounties') },
               { label: "Rankings", action: () => onNavigate?.('rankings') },
               "DIVIDER",
