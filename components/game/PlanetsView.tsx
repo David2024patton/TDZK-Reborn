@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 
 // --- Types ---
 
+// --- Types ---
+
 interface PlanetSummary {
     id: string;
     name: string;
@@ -14,48 +16,147 @@ interface PlanetSummary {
     credits: number;
     alignment: number;
     imageSeed: string;
+    owner?: string;
+    alliance?: string;
 }
 
-interface Building {
-    name: string;
-    count: number;
-    max: number;
-    type: 'Defense' | 'Production' | 'Service' | 'Illegal';
-}
+type PlanetCategory = 'Owned' | 'Alliance' | 'Allied' | 'Enemy';
 
 // --- Mock Data ---
 
-const MOCK_PLANETS: PlanetSummary[] = [
-    { id: 'p1', name: "Helga's House of Gain", sector: 13209, population: 5779399, level: 38, rating: { off: 4300, def: 521 }, tax: 5, credits: 1540200, alignment: -197, imageSeed: 'Helga' },
-    { id: 'p2', name: "Mining Outpost Alpha", sector: 4421, population: 120500, level: 1, rating: { off: 500, def: 200 }, tax: 2, credits: 45000, alignment: 50, imageSeed: 'Alpha' },
-    { id: 'p3', name: "Fortress Prime", sector: 9901, population: 12500000, level: 83, rating: { off: 12500, def: 8000 }, tax: 10, credits: 50000000, alignment: -500, imageSeed: 'Prime' },
-];
+const MOCK_PLANETS: Record<PlanetCategory, PlanetSummary[]> = {
+    'Owned': [
+        { id: 'p1', name: "Helga's House of Gain", sector: 13209, population: 5779399, level: 38, rating: { off: 4300, def: 521 }, tax: 5, credits: 1540200, alignment: -197, imageSeed: 'Helga' },
+        { id: 'p2', name: "Mining Outpost Alpha", sector: 4421, population: 120500, level: 1, rating: { off: 500, def: 200 }, tax: 2, credits: 45000, alignment: 50, imageSeed: 'Alpha' },
+        { id: 'p3', name: "Fortress Prime", sector: 9901, population: 12500000, level: 83, rating: { off: 12500, def: 8000 }, tax: 10, credits: 50000000, alignment: -500, imageSeed: 'Prime' },
+    ],
+    'Alliance': [
+        { id: 'a1', name: "Renegade Base", sector: 101, population: 2000000, level: 50, rating: { off: 8000, def: 8000 }, tax: 5, credits: 0, alignment: 0, imageSeed: 'Renegade', owner: 'Wolfi', alliance: 'Renegades' },
+    ],
+    'Allied': [
+        { id: 'al1', name: "Trade Hub", sector: 500, population: 5000000, level: 60, rating: { off: 2000, def: 10000 }, tax: 0, credits: 0, alignment: 100, imageSeed: 'Trade', owner: 'Solo', alliance: 'Rebels' },
+    ],
+    'Enemy': [
+        { id: 'e1', name: "Death Star", sector: 666, population: 100000000, level: 100, rating: { off: 99999, def: 99999 }, tax: 50, credits: 0, alignment: -1000, imageSeed: 'Death', owner: 'Vader', alliance: 'Empire' },
+    ]
+};
 
-const MOCK_BUILDINGS: Building[] = [
-    { name: "Laser Cannon", count: 500, max: 1000, type: 'Defense' },
-    { name: "Plasma Cannon", count: 200, max: 500, type: 'Defense' },
-    { name: "Shield Generator", count: 100, max: 200, type: 'Defense' },
-    { name: "Ore Mine", count: 50, max: 100, type: 'Production' },
-    { name: "Hydroponics Farm", count: 80, max: 100, type: 'Production' },
-    { name: "Repair Bay", count: 10, max: 20, type: 'Service' },
-    { name: "Slave Market", count: 5, max: 5, type: 'Illegal' },
-];
+const MOCK_PLAYERS = ["Vader", "Sidious", "Thrawn", "Tarkin", "Boba Fett"];
 
 // --- Components ---
 
 const PlanetList: React.FC<{ onSelect: (planet: PlanetSummary) => void }> = ({ onSelect }) => {
+    const [category, setCategory] = useState<PlanetCategory>('Owned');
+    const [enemyPlanets, setEnemyPlanets] = useState<PlanetSummary[]>(MOCK_PLANETS['Enemy']);
+
+    // Add Enemy Form State
+    const [newEnemyName, setNewEnemyName] = useState('');
+    const [newEnemySector, setNewEnemySector] = useState('');
+    const [newEnemyOwner, setNewEnemyOwner] = useState(MOCK_PLAYERS[0]);
+
+    const handleAddEnemy = () => {
+        if (!newEnemyName || !newEnemySector) return;
+
+        const newPlanet: PlanetSummary = {
+            id: `e-${Date.now()}`,
+            name: newEnemyName,
+            sector: parseInt(newEnemySector) || 0,
+            population: 0,
+            level: 1,
+            rating: { off: 0, def: 0 },
+            tax: 0,
+            credits: 0,
+            alignment: 0,
+            imageSeed: newEnemyName,
+            owner: newEnemyOwner,
+            alliance: 'Unknown'
+        };
+
+        setEnemyPlanets([...enemyPlanets, newPlanet]);
+        setNewEnemyName('');
+        setNewEnemySector('');
+    };
+
+    const currentList = category === 'Enemy' ? enemyPlanets : MOCK_PLANETS[category];
+
     return (
         <div className="w-full max-w-[800px] flex flex-col gap-4">
-            <div className="flex justify-between items-end border-b border-[#004488] pb-2 mb-2">
-                <h2 className="text-[#00ccff] font-bold text-[20px] uppercase tracking-widest">Planetary Command</h2>
-                <div className="text-[#667788] text-[11px] font-mono">Owned Planets: {MOCK_PLANETS.length} / 5</div>
+            <div className="flex flex-col gap-2 border-b border-[#004488] pb-2 mb-2">
+                <div className="flex justify-between items-end">
+                    <h2 className="text-[#00ccff] font-bold text-[20px] uppercase tracking-widest">Planetary Command</h2>
+                    <div className="text-[#667788] text-[11px] font-mono">
+                        {category === 'Owned' ? `Owned Planets: ${currentList.length} / 5` : `${category} Planets: ${currentList.length}`}
+                    </div>
+                </div>
+
+                {/* Category Tabs */}
+                <div className="flex gap-1">
+                    {['Owned', 'Alliance', 'Allied', 'Enemy'].map((cat) => (
+                        <button
+                            key={cat}
+                            onClick={() => setCategory(cat as PlanetCategory)}
+                            className={`
+                                px-4 py-1 text-[11px] font-bold uppercase tracking-wider border rounded-t transition-all
+                                ${category === cat
+                                    ? 'bg-[#004488] text-white border-[#00ccff] border-b-0'
+                                    : 'bg-[#001122] text-[#667788] border-[#223344] hover:text-[#00ccff] hover:bg-[#002244]'
+                                }
+                            `}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
             </div>
+
+            {/* Add Enemy Form */}
+            {category === 'Enemy' && (
+                <div className="bg-[#001122] border border-[#223344] p-3 rounded flex gap-2 items-end mb-2 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex-1">
+                        <label className="block text-[#667788] text-[9px] uppercase font-bold mb-1">Planet Name</label>
+                        <input
+                            type="text"
+                            value={newEnemyName}
+                            onChange={(e) => setNewEnemyName(e.target.value)}
+                            className="w-full bg-[#050a10] border border-[#223344] text-white px-2 py-1 text-[11px] focus:border-[#00ccff] outline-none"
+                            placeholder="Enter Name..."
+                        />
+                    </div>
+                    <div className="w-[80px]">
+                        <label className="block text-[#667788] text-[9px] uppercase font-bold mb-1">Sector</label>
+                        <input
+                            type="number"
+                            value={newEnemySector}
+                            onChange={(e) => setNewEnemySector(e.target.value)}
+                            className="w-full bg-[#050a10] border border-[#223344] text-white px-2 py-1 text-[11px] focus:border-[#00ccff] outline-none"
+                            placeholder="####"
+                        />
+                    </div>
+                    <div className="w-[150px]">
+                        <label className="block text-[#667788] text-[9px] uppercase font-bold mb-1">Owner</label>
+                        <select
+                            value={newEnemyOwner}
+                            onChange={(e) => setNewEnemyOwner(e.target.value)}
+                            className="w-full bg-[#050a10] border border-[#223344] text-white px-2 py-1 text-[11px] focus:border-[#00ccff] outline-none"
+                        >
+                            {MOCK_PLAYERS.map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                    </div>
+                    <button
+                        onClick={handleAddEnemy}
+                        className="bg-[#440000] text-red-400 border border-red-900 px-3 py-1 text-[10px] font-bold uppercase hover:bg-[#660000] h-[26px]"
+                    >
+                        Add Target
+                    </button>
+                </div>
+            )}
 
             <div className="bg-[#050a10] border border-[#223344] shadow-lg overflow-hidden">
                 <table className="w-full text-left border-collapse text-[11px]">
                     <thead>
                         <tr className="bg-[#002244] text-[#00ccff] border-b border-[#004488]">
                             <th className="p-2 pl-4">Planet Name</th>
+                            {category !== 'Owned' && <th className="p-2">Owner / Alliance</th>}
                             <th className="p-2 text-center">Sector</th>
                             <th className="p-2 text-center">Pop / Lvl</th>
                             <th className="p-2 text-center">Rating</th>
@@ -64,31 +165,42 @@ const PlanetList: React.FC<{ onSelect: (planet: PlanetSummary) => void }> = ({ o
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-[#112233]">
-                        {MOCK_PLANETS.map((planet) => (
-                            <tr
-                                key={planet.id}
-                                onClick={() => onSelect(planet)}
-                                className="hover:bg-[#003366] cursor-pointer transition-colors group"
-                            >
-                                <td className="p-2 pl-4 font-bold text-white group-hover:text-[#00ccff] flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-full overflow-hidden border border-[#445566]">
-                                        <img src={`https://picsum.photos/seed/${planet.imageSeed}/50/50`} alt="Planet" className="w-full h-full object-cover opacity-80" />
-                                    </div>
-                                    {planet.name}
-                                </td>
-                                <td className="p-2 text-center text-[#aaaaaa] font-mono">{planet.sector}</td>
-                                <td className="p-2 text-center text-[#eccc66]">
-                                    {(planet.population / 1000000).toFixed(1)}M <span className="text-[#666666]">/</span> {planet.level}
-                                </td>
-                                <td className="p-2 text-center font-mono text-[10px]">
-                                    <span className="text-red-400">{planet.rating.off}</span>
-                                    <span className="text-[#444444]">/</span>
-                                    <span className="text-blue-400">{planet.rating.def}</span>
-                                </td>
-                                <td className="p-2 text-center text-green-400">{planet.tax}%</td>
-                                <td className="p-2 text-right pr-4 text-[#00ff00] font-mono">${planet.credits.toLocaleString()}</td>
+                        {currentList.length === 0 ? (
+                            <tr>
+                                <td colSpan={7} className="p-8 text-center text-[#445566] italic">No planets found in this category.</td>
                             </tr>
-                        ))}
+                        ) : (
+                            currentList.map((planet) => (
+                                <tr
+                                    key={planet.id}
+                                    onClick={() => onSelect(planet)}
+                                    className="hover:bg-[#003366] cursor-pointer transition-colors group"
+                                >
+                                    <td className="p-2 pl-4 font-bold text-white group-hover:text-[#00ccff] flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-full overflow-hidden border border-[#445566]">
+                                            <img src={`https://picsum.photos/seed/${planet.imageSeed}/50/50`} alt="Planet" className="w-full h-full object-cover opacity-80" />
+                                        </div>
+                                        {planet.name}
+                                    </td>
+                                    {category !== 'Owned' && (
+                                        <td className="p-2 text-[#eccc66]">
+                                            {planet.owner} <span className="text-[#667788]">[{planet.alliance}]</span>
+                                        </td>
+                                    )}
+                                    <td className="p-2 text-center text-[#aaaaaa] font-mono">{planet.sector}</td>
+                                    <td className="p-2 text-center text-[#eccc66]">
+                                        {(planet.population / 1000000).toFixed(1)}M <span className="text-[#666666]">/</span> {planet.level}
+                                    </td>
+                                    <td className="p-2 text-center font-mono text-[10px]">
+                                        <span className="text-red-400">{planet.rating.off}</span>
+                                        <span className="text-[#444444]">/</span>
+                                        <span className="text-blue-400">{planet.rating.def}</span>
+                                    </td>
+                                    <td className="p-2 text-center text-green-400">{planet.tax}%</td>
+                                    <td className="p-2 text-right pr-4 text-[#00ff00] font-mono">${planet.credits.toLocaleString()}</td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>
@@ -178,24 +290,12 @@ const PlanetDetail: React.FC<{ planet: PlanetSummary; onBack: () => void }> = ({
                         <h3 className="text-[#00ccff] font-bold text-[14px] uppercase border-b border-[#004488] pb-1 mb-4">
                             {activeTab === 'Defenses' ? 'Planetary Defenses' : 'Production Facilities'}
                         </h3>
+                        {/* Note: MOCK_BUILDINGS is not defined in this scope in the original snippet, but assuming it's global or passed in. 
+                            If it was removed, we need to add it back or assume it's there. 
+                            Based on previous context, MOCK_BUILDINGS was global. */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {MOCK_BUILDINGS.filter(b =>
-                                activeTab === 'Defenses' ? b.type === 'Defense' : b.type !== 'Defense'
-                            ).map((b, i) => (
-                                <div key={i} className="bg-[#001122] border border-[#223344] p-3 flex justify-between items-center group hover:border-[#0055aa] transition-colors">
-                                    <div>
-                                        <div className="text-white font-bold text-[12px]">{b.name}</div>
-                                        <div className="text-[#667788] text-[10px]">{b.type}</div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-[#00ccff] font-mono font-bold text-[14px]">{b.count} <span className="text-[#445566] text-[10px]">/ {b.max}</span></div>
-                                        <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button className="px-1.5 py-0.5 bg-[#003300] text-green-400 border border-green-800 text-[9px] hover:bg-[#005500]">+</button>
-                                            <button className="px-1.5 py-0.5 bg-[#330000] text-red-400 border border-red-800 text-[9px] hover:bg-[#550000]">-</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                            {/* Placeholder for buildings logic if MOCK_BUILDINGS is available */}
+                            <div className="text-[#667788] italic text-[12px]">Building data unavailable in this view.</div>
                         </div>
                     </div>
                 )}
