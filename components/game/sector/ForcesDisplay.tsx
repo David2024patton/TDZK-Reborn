@@ -9,11 +9,11 @@ const DRONE_DATA: ShipData[] = [
         shipName: 'Starkiller',
         playerName: '',
         guild: 'Sith',
-        race: '5 Combat Drones',
-        shipClass: 'Drone Cluster',
+        race: '',
+        shipClass: 'Combat',
         shipLevel: 0,
-        playerLevel: 99,
-        rating: 'N/A',
+        playerLevel: 0,
+        rating: '5',
         isOnline: true,
         status: []
     },
@@ -23,11 +23,11 @@ const DRONE_DATA: ShipData[] = [
         shipName: 'Darth Vader',
         playerName: '',
         guild: 'Empire',
-        race: '12 Scout Drones',
-        shipClass: 'Drone Cluster',
+        race: '',
+        shipClass: 'Scout',
         shipLevel: 0,
-        playerLevel: 100,
-        rating: 'N/A',
+        playerLevel: 0,
+        rating: '12',
         isOnline: true,
         status: []
     }
@@ -35,33 +35,31 @@ const DRONE_DATA: ShipData[] = [
 
 export const ForcesDisplay: React.FC<{ onAttack?: (target?: any) => void }> = ({ onAttack }) => {
     return (
-        <div className="w-full bg-[#0b131e]/80 border border-[#223344] rounded-sm p-3 shadow-lg backdrop-blur-sm">
-            <div className="text-[#ff5555] font-bold text-[11px] mb-2 uppercase tracking-wide border-b border-[#442222] pb-1">
-                Forces in Sector
-            </div>
-            <div className="flex justify-between items-center text-[10px] text-[#8899aa]">
-                <div>
-                    <span className="text-white font-bold">Owner:</span> <span className="text-[#aaccff]">(0-0)</span>
-                </div>
-                <div className="flex gap-2">
-                    <span>Sct: <span className="text-white">50</span></span>
-                    <span>Com: <span className="text-white">200</span></span>
-                    <span>EMP: <span className="text-white">10</span></span>
-                </div>
+        <div className="flex flex-col w-full min-w-[500px] overflow-x-auto mt-4">
+            <div className="bg-[#1a0505] border border-[#441111] border-b-0 py-1 text-center">
+                <span className="text-[#ff5555] font-bold text-[11px] uppercase tracking-wider shadow-black drop-shadow-md">
+                    Forces in Sector
+                </span>
             </div>
 
-            <div className="mt-2 border-t border-[#223344] pt-2">
-                <div className="text-[#667788] text-[9px] uppercase tracking-wider mb-1">Deployed Drones</div>
-                <div className="flex flex-col gap-1 border border-[#003366] bg-black/50 shadow-lg rounded-sm overflow-hidden">
-                    {DRONE_DATA.map(drone => (
-                        <StandardPlayerRow
-                            key={drone.id}
-                            data={drone}
-                            onExamine={() => onAttack?.(drone)}
-                            actionLabel="[Attack]"
-                        />
-                    ))}
-                </div>
+            <div className="bg-gradient-to-r from-[#330000]/90 via-[#441111]/90 to-[#110000]/90 border border-[#660000] border-b-0 px-1 py-1 h-[24px] backdrop-blur-sm shadow-md grid grid-cols-[200px_1fr_70px_30px_60px] gap-x-1 items-center text-[#ff8888] text-[8px] uppercase tracking-wider">
+                <div className="text-left pl-1"></div>
+                <div className="text-left pl-1">Name</div>
+                <div className="text-right">Type</div>
+                <div className="text-right px-1">Qty</div>
+                <div className="text-right pr-1"></div>
+            </div>
+
+            <div className="border border-[#660000] bg-black/50 shadow-lg rounded-b-sm overflow-hidden flex flex-col backdrop-blur-sm">
+                {DRONE_DATA.map(drone => (
+                    <StandardPlayerRow
+                        key={drone.id}
+                        data={drone}
+                        onExamine={() => onAttack?.(drone)}
+                        actionLabel="[Attack]"
+                        variant="compact"
+                    />
+                ))}
             </div>
         </div>
     );

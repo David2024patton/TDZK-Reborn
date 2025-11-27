@@ -19,7 +19,12 @@ const StatusBadge: React.FC<{ type: 'cloak' | 'deploy' }> = ({ type }) => {
     return null;
 };
 
-export const StandardPlayerRow: React.FC<{ data: ShipData, onExamine?: (ship: ShipData) => void, actionLabel?: string }> = ({ data, onExamine, actionLabel = "[Examine]" }) => {
+export const StandardPlayerRow: React.FC<{
+    data: ShipData,
+    onExamine?: (ship: ShipData) => void,
+    actionLabel?: string,
+    variant?: 'default' | 'compact'
+}> = ({ data, onExamine, actionLabel = "[Examine]", variant = 'default' }) => {
     const {
         shipName, playerName, guild, race, shipClass,
         shipLevel, playerLevel, rating,
@@ -45,52 +50,72 @@ export const StandardPlayerRow: React.FC<{ data: ShipData, onExamine?: (ship: Sh
     };
     const nameColor = getRaceColor(race);
 
+    const isCompact = variant === 'compact';
+
     return (
-        <div className="grid grid-cols-[50px_150px_1fr_70px_30px_60px] gap-x-1 border-b border-[#002244] hover:bg-[#001133] text-[9px] group cursor-pointer bg-[#020408] transition-colors py-1 px-1 min-w-[500px]">
-            <div className="flex items-start justify-center">
-                <img src={allianceTagUrl} alt="Ally" className="w-[50px] h-[20px] object-cover block bg-[#111] border border-[#333]" />
-            </div>
+        <div className={`grid grid-cols-[200px_1fr_70px_30px_60px] gap-x-1 border-b border-[#002244] hover:bg-[#001133] text-[9px] group cursor-pointer bg-[#020408] transition-colors py-1 px-1 min-w-[500px] ${isCompact ? 'h-[30px] items-center' : ''}`}>
             <div className="flex items-start justify-start">
+                <img src={allianceTagUrl} alt="Ally" className="w-[50px] h-[20px] object-cover block bg-[#111] border border-[#333]" />
                 <img src={personalTagUrl} alt="Personal" className="w-[150px] h-[20px] object-cover block bg-[#222] border border-[#333] border-l-0" />
             </div>
             <div className="flex items-center pl-1 overflow-hidden h-[20px]">
                 <span className="text-white font-bold text-[10px] truncate drop-shadow-md">
                     {shipName || <span className="opacity-50 italic">Unidentified Vessel</span>}
+                    {isOnline && !playerName && <span className="text-[#446644] text-[8px] font-mono tracking-tight ml-2">[ONLINE]</span>}
                 </span>
             </div>
             <div className="flex items-center justify-end h-[20px]">
                 <span className="text-[#8899aa] text-[9px] truncate">{shipClass}</span>
             </div>
             <div className="flex items-center justify-end px-1 h-[20px]">
-                <span className="text-white text-[9px] font-bold">L: {shipLevel}</span>
+                <span className="text-white text-[9px] font-bold">
+                    {isCompact ? rating : `L: ${shipLevel}`}
+                </span>
             </div>
             <div className="flex items-center justify-end pr-1 h-[20px]">
-                <span className="text-[#00ccff] font-bold text-[9px]">{rating}</span>
+                {isCompact ? (
+                    <span
+                        className="text-[#0088aa] group-hover:text-[#00ccff] text-[8px] hover:underline cursor-pointer"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onExamine?.(data);
+                        }}
+                    >{actionLabel}</span>
+                ) : (
+                    <span className="text-[#00ccff] font-bold text-[9px]">{rating}</span>
+                )}
             </div>
-            <div className="flex flex-col items-center justify-start pt-0.5 min-h-[14px]">
-                {status?.includes('Cloaked') && <StatusBadge type="cloak" />}
-                {status?.includes('Deployed') && <StatusBadge type="deploy" />}
-            </div>
-            <div className="bg-[#000]/10 border-r border-[#112233]/20"></div>
-            <div className="flex items-start pt-0.5 pl-1">
-                <span className={`${nameColor} text-[9px] font-bold mr-1 truncate`}>{playerName}</span>
-                {isOnline && <span className="text-[#446644] text-[8px] font-mono tracking-tight">[ONLINE]</span>}
-            </div>
-            <div className="flex items-start justify-end pt-0.5">
-                <span className="text-[#445566] text-[8px] uppercase tracking-wider">{race}</span>
-            </div>
-            <div className="flex items-start justify-end px-1 pt-0.5">
-                <span className="text-[#556677] text-[8px]">L: {playerLevel}</span>
-            </div>
-            <div className="flex items-start justify-end pr-1 pt-0.5">
-                <span
-                    className="text-[#0088aa] group-hover:text-[#00ccff] text-[8px] hover:underline cursor-pointer"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onExamine?.(data);
-                    }}
-                >{actionLabel}</span>
-            </div>
+
+            {!isCompact && (
+                <>
+                    <div className="flex">
+                        <div className="w-[50px] flex flex-col items-center justify-start pt-0.5 min-h-[14px]">
+                            {status?.includes('Cloaked') && <StatusBadge type="cloak" />}
+                            {status?.includes('Deployed') && <StatusBadge type="deploy" />}
+                        </div>
+                        <div className="w-[150px] bg-[#000]/10 border-r border-[#112233]/20"></div>
+                    </div>
+                    <div className="flex items-start pt-0.5 pl-1">
+                        <span className={`${nameColor} text-[9px] font-bold mr-1 truncate`}>{playerName}</span>
+                        {isOnline && playerName && <span className="text-[#446644] text-[8px] font-mono tracking-tight">[ONLINE]</span>}
+                    </div>
+                    <div className="flex items-start justify-end pt-0.5">
+                        <span className="text-[#445566] text-[8px] uppercase tracking-wider">{race}</span>
+                    </div>
+                    <div className="flex items-start justify-end px-1 pt-0.5">
+                        <span className="text-[#556677] text-[8px]">L: {playerLevel}</span>
+                    </div>
+                    <div className="flex items-start justify-end pr-1 pt-0.5">
+                        <span
+                            className="text-[#0088aa] group-hover:text-[#00ccff] text-[8px] hover:underline cursor-pointer"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onExamine?.(data);
+                            }}
+                        >{actionLabel}</span>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
@@ -110,8 +135,7 @@ export const ShipList: React.FC<ShipListProps> = ({ ships, header, onExamine }) 
                 </span>
             </div>
 
-            <div className="bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[24px] backdrop-blur-sm shadow-md grid grid-cols-[50px_150px_1fr_70px_30px_60px] gap-x-1 items-center text-[#667788] text-[8px] uppercase tracking-wider">
-                <div className="text-center"></div>
+            <div className="bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[24px] backdrop-blur-sm shadow-md grid grid-cols-[200px_1fr_70px_30px_60px] gap-x-1 items-center text-[#667788] text-[8px] uppercase tracking-wider">
                 <div className="text-left pl-1"></div>
                 <div className="text-left pl-1">Name</div>
                 <div className="text-right">Class/Race</div>
