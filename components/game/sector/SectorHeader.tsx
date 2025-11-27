@@ -21,7 +21,7 @@ export const SectorHeader: React.FC<SectorHeaderProps> = ({ currentSector }) => 
 
                         <div className="flex flex-col items-start leading-none">
                             <div className="text-white font-bold text-[12px] leading-none mb-0.5">100%</div>
-                            <div className="text-[#335577] text-[7px] uppercase tracking-wider">VISIBILITY</div>
+                            <div className="text-[#6688aa] text-[7px] uppercase tracking-wider">VISIBILITY</div>
                         </div>
                     </div>
                 </div>
@@ -31,15 +31,15 @@ export const SectorHeader: React.FC<SectorHeaderProps> = ({ currentSector }) => 
                     <div className="text-white font-mono text-[20px] font-bold leading-none drop-shadow-[0_0_8px_rgba(0,200,255,0.5)] tracking-widest text-center">
                         {currentSector}
                     </div>
-                    <div className="flex flex-wrap justify-center gap-2 text-[9px] mt-1 text-[#667788] font-mono">
-                        <span className="text-[#0088aa]">Deep Space</span>
-                        <span>/</span>
-                        <span>Normal</span>
+                    <div className="flex flex-wrap justify-center gap-2 text-[9px] mt-1 text-[#8899aa] font-mono">
+                        <span className="text-[#00ccff]">Deep Space</span>
+                        <span className="text-[#6688aa]">/</span>
+                        <span className="text-[#aaccff]">Normal</span>
                     </div>
                 </div>
 
                 <div className="basis-[140px] grow-0 shrink-0 flex flex-col justify-center bg-[#050a10]/50 p-2 relative overflow-hidden min-h-[60px]">
-                    <div className="text-[7px] text-[#445566] uppercase tracking-[0.2em] text-center mb-1 font-bold">AURAS</div>
+                    <div className="text-[7px] text-[#6688aa] uppercase tracking-[0.2em] text-center mb-1 font-bold">AURAS</div>
                     <div className="flex gap-1 justify-center">
                         {[
                             { color: 'text-red-400 border-red-500 bg-red-950', icon: 'M12 2L2 22h20L12 2z' },

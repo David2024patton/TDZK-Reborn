@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 interface Notice {
     id: string;
-    type: 'Combat' | 'Trade' | 'System' | 'Alliance';
+    type: 'Combat' | 'Trade' | 'System' | 'Alliance' | 'Raid';
     message: string;
     date: string;
     isRead: boolean;
@@ -12,44 +12,54 @@ interface Notice {
 const MOCK_NOTICES: Notice[] = [
     {
         id: '1',
-        type: 'Combat',
-        message: "You were attacked by Pirate Ship 'Black Pearl' in Sector 1234. Shields held at 45%.",
-        date: "2024-01-20 14:30",
+        type: 'Raid',
+        message: "ALERT: Port 420 in Sector 5000 is under attack by 'Rebel Fleet'!",
+        date: "2024-01-20 14:35",
         isRead: false
     },
     {
         id: '2',
+        type: 'Combat',
+        message: "You killed 'Greedo' in Sector 101.",
+        date: "2024-01-20 14:30",
+        isRead: false
+    },
+    {
+        id: '3',
+        type: 'Combat',
+        message: "You were killed by 'Skywalker' in Sector 4500.",
+        date: "2024-01-20 12:15",
+        isRead: true
+    },
+    {
+        id: '4',
+        type: 'Combat',
+        message: "Your drone in Sector 5555 was destroyed by 'Vader'.",
+        date: "2024-01-18 22:45",
+        isRead: true
+    },
+    {
+        id: '5',
         type: 'Trade',
         message: "Trade completed: Sold 500 Ore at Port 99 for 15,000 Credits.",
         date: "2024-01-20 12:15",
         isRead: true
     },
     {
-        id: '3',
+        id: '6',
         type: 'Alliance',
         message: "Alliance 'Rebels' has requested a peace treaty.",
         date: "2024-01-19 09:00",
         isRead: false
-    },
-    {
-        id: '4',
-        type: 'System',
-        message: "Welcome to TDZK Reborn! Don't forget to set your initial skills.",
-        date: "2024-01-15 00:00",
-        isRead: true
-    },
-    {
-        id: '5',
-        type: 'Combat',
-        message: "Your drone in Sector 5555 was destroyed by 'Vader'.",
-        date: "2024-01-18 22:45",
-        isRead: true
     }
 ];
 
 export const NoticesView: React.FC = () => {
     const [notices, setNotices] = useState<Notice[]>(MOCK_NOTICES);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [filter, setFilter] = useState<string>('All');
+
+    const filteredNotices = notices.filter(n => filter === 'All' || n.type === filter);
 
     const toggleSelection = (id: string) => {
         const newSelection = new Set(selectedIds);
@@ -76,6 +86,7 @@ export const NoticesView: React.FC = () => {
             case 'Combat': return 'text-red-400 border-red-900/50 bg-red-950/20';
             case 'Trade': return 'text-green-400 border-green-900/50 bg-green-950/20';
             case 'Alliance': return 'text-yellow-400 border-yellow-900/50 bg-yellow-950/20';
+            case 'Raid': return 'text-orange-400 border-orange-900/50 bg-orange-950/20';
             default: return 'text-blue-400 border-blue-900/50 bg-blue-950/20';
         }
     };
@@ -88,6 +99,25 @@ export const NoticesView: React.FC = () => {
                     Personal Comm-Link
                 </h2>
                 <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-[#004488] to-transparent mb-4"></div>
+
+                {/* Filter Bar */}
+                <div className="flex flex-wrap justify-center gap-2 mb-4">
+                    {['All', 'Combat', 'Raid', 'Trade', 'Alliance', 'System'].map((type) => (
+                        <button
+                            key={type}
+                            onClick={() => setFilter(type)}
+                            className={`
+                                px-3 py-1 text-[10px] font-bold uppercase tracking-wider border rounded transition-all
+                                ${filter === type
+                                    ? 'bg-[#00ccff] text-[#000] border-[#00ccff] shadow-[0_0_10px_rgba(0,204,255,0.3)]'
+                                    : 'bg-[#050a10] text-[#667788] border-[#223344] hover:border-[#445566] hover:text-[#8899aa]'
+                                }
+                            `}
+                        >
+                            {type}
+                        </button>
+                    ))}
+                </div>
 
                 {/* Actions Bar */}
                 <div className="flex justify-between items-center bg-[#001122] border border-[#223344] p-2 rounded mb-4">
@@ -115,12 +145,12 @@ export const NoticesView: React.FC = () => {
 
             {/* Notices List */}
             <div className="w-full max-w-[800px] space-y-2">
-                {notices.length === 0 ? (
+                {filteredNotices.length === 0 ? (
                     <div className="text-center py-12 text-[#445566] italic border border-[#223344] bg-[#050a10] rounded">
                         No messages in inbox.
                     </div>
                 ) : (
-                    notices.map((notice) => (
+                    filteredNotices.map((notice) => (
                         <div
                             key={notice.id}
                             onClick={() => toggleSelection(notice.id)}

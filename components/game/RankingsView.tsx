@@ -12,7 +12,7 @@ interface RankingEntry {
     subValue?: string; // For K/Avg or similar
 }
 
-type RankingCategory = 'EXP' | 'Kills' | 'NPC Kills' | 'Bounties' | 'Ports Raided' | 'Pirates' | 'Goods Bought' | 'Total Goods';
+type RankingCategory = 'EXP' | 'Kills' | 'NPC Kills' | 'Bounties' | 'Ports Raided' | 'Pirates' | 'Trading' | 'Gathering';
 
 const MOCK_RANKINGS: Record<RankingCategory, RankingEntry[]> = {
     'EXP': [
@@ -34,8 +34,8 @@ const MOCK_RANKINGS: Record<RankingCategory, RankingEntry[]> = {
         { rank: 2, name: "Sparrow", guildRank: "Captain", level: 140, race: "Human", guild: "Pirates", value: 450 },
     ],
     'Pirates': [],
-    'Goods Bought': [],
-    'Total Goods': []
+    'Trading': [],
+    'Gathering': []
 };
 
 // Helper for generating seed-based images
@@ -63,10 +63,10 @@ export const RankingsView: React.FC = () => {
                             key={cat}
                             onClick={() => setCategory(cat)}
                             className={`
-                                px-3 py-1 text-[10px] font-bold uppercase tracking-wider border transition-all
+                                px-3 py-1 text-[10px] font-bold uppercase tracking-wider border transition-all rounded
                                 ${category === cat
-                                    ? 'bg-[#004488] text-white border-[#00ccff] shadow-[0_0_10px_rgba(0,100,255,0.5)]'
-                                    : 'bg-[#001122] text-[#667788] border-[#223344] hover:text-[#00ccff] hover:border-[#00ccff]'
+                                    ? 'bg-[#00ccff] text-black border-[#00ccff] shadow-[0_0_10px_rgba(0,204,255,0.3)]'
+                                    : 'bg-[#050a10] text-[#667788] border-[#223344] hover:text-[#aaccff]'
                                 }
                             `}
                         >
@@ -76,52 +76,21 @@ export const RankingsView: React.FC = () => {
                 </div>
             </div>
 
-            {/* Rankings Table */}
-            <div className="w-full max-w-[800px] bg-[#050a10] border border-[#223344] shadow-lg">
-                <div className="grid grid-cols-[40px_220px_1fr_120px_120px] bg-[#002244] text-[#00ccff] font-bold text-[10px] uppercase tracking-wider py-2 px-2 border-b border-[#004488]">
-                    <div className="text-center">Rank</div>
-                    <div className="pl-2">Pilot Info</div>
-                    <div className="pl-2">Name / Rank</div>
-                    <div className="text-right pr-2">Lvl / Race</div>
-                    <div className="text-right pr-2">{category}</div>
+            {/* List Header */}
+            <div className="w-full max-w-[800px]">
+                <div className="bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[24px] backdrop-blur-sm shadow-md grid grid-cols-[30px_200px_1fr_70px_30px_100px] gap-x-1 items-center text-[#667788] text-[8px] uppercase tracking-wider">
+                    <div className="text-center">#</div>
+                    <div className="text-left pl-1">Identity</div>
+                    <div className="text-left pl-1">Pilot Name</div>
+                    <div className="text-right">Race</div>
+                    <div className="text-right px-1">Lvl</div>
+                    <div className="text-right pr-1">{category}</div>
                 </div>
 
-                <div className="divide-y divide-[#112233]">
+                <div className="border border-[#003366] bg-black/50 shadow-lg rounded-b-sm overflow-hidden flex flex-col backdrop-blur-sm">
                     {data.length > 0 ? (
                         data.map((entry, i) => (
-                            <div key={i} className="grid grid-cols-[40px_220px_1fr_120px_120px] py-2 px-2 items-center hover:bg-[#ffffff]/5 transition-colors text-[11px]">
-                                {/* Rank */}
-                                <div className="text-center font-bold text-[#eccc66] text-[14px] font-mono">
-                                    {entry.rank}
-                                </div>
-
-                                {/* Banners */}
-                                <div className="flex flex-col gap-1 pl-2">
-                                    <div className="flex items-center gap-1">
-                                        <img src={getAllyTag(entry.guild)} alt="Ally" className="w-[50px] h-[20px] object-cover border border-[#333]" />
-                                        <span className="text-[9px] text-[#667788]">{entry.guild}</span>
-                                    </div>
-                                    <img src={getPersonalTag(entry.name)} alt="Personal" className="w-[150px] h-[20px] object-cover border border-[#333]" />
-                                </div>
-
-                                {/* Name / Rank */}
-                                <div className="pl-2 flex flex-col justify-center">
-                                    <span className="text-white font-bold text-[12px]">{entry.name}</span>
-                                    <span className="text-[#eccc66] text-[10px]">{entry.guildRank}</span>
-                                </div>
-
-                                {/* Level / Race */}
-                                <div className="text-right pr-2 flex flex-col justify-center">
-                                    <span className="text-white font-bold">L: {entry.level}</span>
-                                    <span className="text-[#8899aa] text-[10px]">{entry.race}</span>
-                                </div>
-
-                                {/* Value */}
-                                <div className="text-right pr-2 flex flex-col justify-center">
-                                    <span className="text-[#00ff00] font-mono font-bold">{entry.value}</span>
-                                    {entry.subValue && <span className="text-[#888888] text-[9px]">{entry.subValue}</span>}
-                                </div>
-                            </div>
+                            <RankingRow key={i} entry={entry} />
                         ))
                     ) : (
                         <div className="p-8 text-center text-[#445566] italic">
@@ -129,6 +98,53 @@ export const RankingsView: React.FC = () => {
                         </div>
                     )}
                 </div>
+            </div>
+        </div>
+    );
+};
+
+const RankingRow: React.FC<{ entry: RankingEntry }> = ({ entry }) => {
+    const allianceSeed = entry.guild ? entry.guild.replace(/\W/g, '') : 'neutral';
+    const personalSeed = entry.name.replace(/\W/g, '');
+    const allianceTagUrl = `https://picsum.photos/seed/${allianceSeed}/50/20`;
+    const personalTagUrl = `https://picsum.photos/seed/${personalSeed}/150/20`;
+
+    const getRaceColor = (r: string) => {
+        switch (r) {
+            case 'Kitaran': return 'text-red-400';
+            case 'Derivian': return 'text-blue-400';
+            case 'Zallun': return 'text-green-400';
+            case 'Wraith': return 'text-purple-400';
+            case 'Terran': return 'text-yellow-200';
+            case 'Human': return 'text-yellow-200'; // Map Human to Terran color or similar
+            case 'Mandalorian': return 'text-orange-400';
+            default: return 'text-[#aaccff]';
+        }
+    };
+
+    return (
+        <div className="grid grid-cols-[30px_200px_1fr_70px_30px_100px] gap-x-1 border-b border-[#002244] hover:bg-[#001133] text-[9px] group cursor-pointer bg-[#020408] transition-colors py-1 px-1 h-[30px] items-center">
+            <div className="flex items-center justify-center font-bold text-[#eccc66] font-mono">
+                {entry.rank}
+            </div>
+            <div className="flex items-start justify-start">
+                <img src={allianceTagUrl} alt="Ally" className="w-[50px] h-[20px] object-cover block bg-[#111] border border-[#333]" />
+                <img src={personalTagUrl} alt="Personal" className="w-[150px] h-[20px] object-cover block bg-[#222] border border-[#333] border-l-0" />
+            </div>
+            <div className="flex items-center pl-1 overflow-hidden h-[20px]">
+                <span className="text-white font-bold text-[10px] truncate drop-shadow-md">
+                    {entry.name}
+                </span>
+            </div>
+            <div className="flex items-center justify-end h-[20px]">
+                <span className={`${getRaceColor(entry.race)} text-[9px] uppercase tracking-wider`}>{entry.race}</span>
+            </div>
+            <div className="flex items-center justify-end px-1 h-[20px]">
+                <span className="text-white text-[9px] font-bold">{entry.level}</span>
+            </div>
+            <div className="flex flex-col items-end justify-center pr-1 h-[20px]">
+                <span className="text-[#00ccff] font-bold text-[9px] font-mono">{entry.value}</span>
+                {entry.subValue && <span className="text-[#667788] text-[8px]">{entry.subValue}</span>}
             </div>
         </div>
     );
