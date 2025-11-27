@@ -1,0 +1,26 @@
+
+export const BUILDINGS = [
+  { name: "Colonies", type: "0", cost: "1,000,000", goods: "50 Machinery, 25 Electronics", curve: 100, max: 75, desc: "Houses up to 100,000 colonists." },
+  { name: "Power Plant", type: "0", cost: "1,000,000", goods: "50 Machinery, 50 Crystal", curve: 150, max: "-", desc: "Consumes 5 Fuel and 1 Chemicals to produce 1000 power per hour." },
+  { name: "Drone Hangars", type: "1", cost: "2,000,000", goods: "100 Machinery, 20 Electronics", curve: 50, max: "-", desc: "Increases drone capacity by 10." },
+  { name: "Shield Generator", type: "1", cost: "750,000", goods: "50 Machinery, 50 Electronics, 20 Crystal", curve: 100, max: "-", desc: "Increases shield capacity by 1000." },
+  { name: "Beam Turrets", type: "2", cost: "2,000,000", goods: "50 Machinery, 50 Electronics, 200 Crystal", curve: 85, max: "-", desc: "Medium armor/shield damage, very low drone damage, high accuracy/critical." },
+  { name: "EMP Turrets", type: "2", cost: "1,250,000", goods: "50 Machinery, 100 Electronics, 100 Crystal", curve: 85, max: "-", desc: "Low shield damage, low drone damage, no armor damage, high EMP damage." },
+  { name: "Fusion Turret", type: "2", cost: "2,000,000", goods: "100 Machinery, 50 Electronics, 100 Crystal", curve: 85, max: "-", desc: "Very high armor/shield damage, no drone damage, low accuracy, wide damage range." },
+  { name: "Missile Turret", type: "2", cost: "1,500,000", goods: "100 Machinery, 75 Electronics, 75 Crystal", curve: 85, max: "-", desc: "High shield/armor, low drone damage, high accuracy." },
+  { name: "Rocket Turret", type: "2", cost: "1,500,000", goods: "100 Machinery, 100 Electronics, 50 Crystal", curve: 85, max: "-", desc: "Medium shield damage, high armor damage, medium drone damage, medium accuracy." },
+  { name: "Chemical Refineries", type: "3", cost: "500,000", goods: "80 Machinery, 40 Electronics", curve: 100, max: "-", desc: "Produces 25 Fuel and 10 Chemicals per hour." },
+  { name: "Crystal Extractors", type: "3", "cost": "1,000,000", goods: "100 Machinery, 50 Electronics", curve: 75, max: "-", desc: "Consumes 10 Ore and 5 Fuel to produce 5 Crystal per hour." },
+  { name: "Electronics Plants", type: "3", cost: "750,000", goods: "75 Machinery, 50 Electronics, 75 Crystal", curve: 50, max: "-", desc: "Consumes 5 Precious Metals, 1 Crystal, and 5 Chemicals to produce 10 Electronics per hour." },
+  { name: "Hydroponics Farm", type: "3", cost: "350,000", goods: "30 Fuel, 30 Chemicals, 30 Machinery", curve: 100, max: "-", desc: "Produces 50 Food per hour." },
+  { name: "Luxury Manufacturers", type: "3", cost: "1,000,000", goods: "100 Machinery, 100 Electronics, 50 Crystal", curve: 50, max: "-", desc: "Consumes 5 Precious Metals, and 5 Crystals to produce 10 Luxury Items per hour." },
+  { name: "Machine Factories", type: "3", cost: "750,000", goods: "75 Machinery, 75 Electronics, 20 Crystal", curve: 50, max: "-", desc: "Consumes 5 Ore, 5 Precious Metals, and 5 Fuel to produce 10 Machinery per hour." },
+  { name: "Ore Mine", type: "3", cost: "500,000", goods: "100 Machinery, 20 Electronics", curve: 100, max: "-", desc: "Produces 25 ore per hour." },
+  { name: "Ore Purifiers", type: "3", cost: "500,000", goods: "100 Machinery, 20 Electronics", curve: 75, max: "-", desc: "Consumes 20 Ore and produces 10 Precious Metals per hour." },
+  { name: "Narcotics Laboratories", type: "4", cost: "1,500,000", goods: "50 Machinery, 100 Electronics, 150 Crystal", curve: 50, max: "-", desc: "Consumes 10 Food, 10 Chemicals, and 10 Fuel to produce 10 Narcotics per hour." },
+  { name: "Slave Markets", type: "4", cost: "750,000", goods: "50 Chemicals, 100 Slaves, 50 Machinery", curve: 50, max: "-", desc: "Consumes 20 Food to produce 10 Slaves per hour." },
+  { name: "Weapons Compounds", type: "4", cost: "1,000,000", goods: "100 Machinery, 100 Electronics, 75 Crystal", curve: 50, max: "-", desc: "Consumes 5 Precious Metals, 2 Machinery, and 2 Electronics to produce 10 Weapons per hour." },
+  { name: "Drone Assemblers", type: "5", cost: "750,000", goods: "100 Machinery, 50 Electronics, 50 Crystal", curve: 50, max: "-", desc: "Consumes 10 Machinery and 2 Electronics to produce 1 Combat Drone per hour." },
+  { name: "Goods Exporters", type: "5", cost: "10,000,000", goods: "50 Machinery, 50 Electronics, 50 Crystal", curve: 20, max: "-", desc: "Increases the planetary goods consumption rate by 5% of normal." },
+  { name: "Repair Bays", type: "5", cost: "750,000", goods: "150 Machinery, 50 Electronics", curve: 50, max: "-", desc: "Consumes up to 5 Precious Metals, 5 Machinery, and 5 Electronics to repair up to 100 Armor per hour." }
+];
