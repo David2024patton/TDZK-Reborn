@@ -22,7 +22,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({ isFloating = false, onNavi
               <span className="text-[#0055aa] font-bold text-[18px] tracking-[0.5em] opacity-60 [writing-mode:vertical-rl] rotate-180 drop-shadow-[0_0_5px_rgba(0,100,255,0.5)]">NAV</span>
             </div>
             <div>
-              <DPad />
+              <DPad onCenterClick={() => onNavigate?.('sector')} />
             </div>
           </div>
         )}

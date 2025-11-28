@@ -334,7 +334,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
             {/* Persistent D-Pad */}
             {(!leftOpen || leftMode === 'float') && (
                 <div className="fixed top-2 left-2 z-50 scale-75 origin-top-left opacity-90 hover:opacity-100 transition-opacity">
-                    <DPad />
+                    <DPad onCenterClick={() => handleNavigate('sector')} />
                 </div>
             )}
 
