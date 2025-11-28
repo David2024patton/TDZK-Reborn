@@ -21,34 +21,27 @@
          We do NOT apply global custom styles here so native overlay scrollbars work.
       */
 
-      /* Desktop/Mouse Devices: Custom Retro Scrollbars that show on hover */
+      /* Desktop/Mouse Devices: Custom Retro Scrollbars */
       @media (pointer: fine) {
         ::-webkit-scrollbar {
-          width: 10px;
-          height: 10px;
+          width: 5px;
+          height: 5px;
         }
         
-        /* Hidden by default */
+        /* Visible by default */
         ::-webkit-scrollbar-track {
-          background: transparent; 
+          background: #000022; 
         }
         ::-webkit-scrollbar-thumb {
-          background: transparent;
-          border: 1px solid transparent;
-        }
-
-        /* Show when hovering the scrollable container */
-        *:hover::-webkit-scrollbar-track {
-          background: #000022;
-        }
-        *:hover::-webkit-scrollbar-thumb {
           background: #003366;
           border: 1px solid #0066cc;
+          border-radius: 2px;
         }
         
-        /* Always show when hovering the scrollbar itself */
+        /* Hover effect */
         ::-webkit-scrollbar-thumb:hover {
           background: #004488;
+          border-color: #00ccff;
         }
       }
 
