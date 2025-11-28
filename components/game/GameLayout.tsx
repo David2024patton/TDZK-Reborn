@@ -45,7 +45,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
 
     // Initialize standard sidebar visibility for mobile
     useEffect(() => {
-        if (window.innerWidth < 768) {
+        if (window.innerWidth < 1024) {
             setLeftOpen(false);
             setRightOpen(false);
             setLeftSize({ w: 210, h: 400 });
@@ -59,13 +59,13 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
             const w = window.innerWidth;
             const h = window.innerHeight;
 
-            // 1. Handle Mobile Transition (Auto-close when shrinking below 768px)
-            if (w < 768 && prevWidth.current >= 768) {
+            // 1. Handle Mobile Transition (Auto-close when shrinking below 1024px)
+            if (w < 1024 && prevWidth.current >= 1024) {
                 setLeftOpen(false);
                 setRightOpen(false);
             }
-            // 2. Handle Desktop Transition (Auto-open when expanding above 768px)
-            else if (w >= 768 && prevWidth.current < 768) {
+            // 2. Handle Desktop Transition (Auto-open when expanding above 1024px)
+            else if (w >= 1024 && prevWidth.current < 1024) {
                 setLeftOpen(true);
                 setRightOpen(true);
             }
@@ -82,7 +82,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
                     x: Math.max(0, Math.min(prev.x, w - rightSize.w)),
                     y: Math.max(0, Math.min(prev.y, h - 50))
                 }));
-            } else if (rightMode === 'docked' && w >= 768) {
+            } else if (rightMode === 'docked' && w >= 1024) {
                 // Reset floating pos for right panel if we are docked, 
                 // so if we pop out later it spawns in a visible location
                 setRightPos({ x: w - 240, y: 120 });
@@ -99,7 +99,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
     const handleNavigate = (view: ViewType) => {
         setActiveView(view);
         // On mobile, close left panel after navigation to see content
-        if (window.innerWidth < 768) {
+        if (window.innerWidth < 1024) {
             setLeftOpen(false);
         }
     };
@@ -249,17 +249,17 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
         if (mode === 'docked') {
             return (
                 <div className={`
-                fixed md:relative z-40 md:z-auto top-0 bottom-0 md:inset-auto 
+                fixed lg:relative z-40 lg:z-auto top-0 bottom-0 lg:inset-auto 
                 ${isLeft ? 'left-0' : 'right-0'}
-                w-[210px] md:w-[220px] shrink-0 flex flex-col h-full
-                bg-black/95 md:bg-transparent
-                border-r md:border-none border-[#003366]
-                shadow-[0_0_50px_rgba(0,0,0,0.8)] md:shadow-none
+                w-[210px] lg:w-[220px] shrink-0 flex flex-col h-full
+                bg-black/95 lg:bg-transparent
+                border-r lg:border-none border-[#003366]
+                shadow-[0_0_50px_rgba(0,0,0,0.8)] lg:shadow-none
                 transition-transform duration-300
-                ${!isOpen ? (isLeft ? '-translate-x-full md:translate-x-0' : 'translate-x-full md:translate-x-0') : 'translate-x-0'}
+                ${!isOpen ? (isLeft ? '-translate-x-full lg:translate-x-0' : 'translate-x-full lg:translate-x-0') : 'translate-x-0'}
              `}>
                     {/* Mobile Header */}
-                    <div className="md:hidden flex justify-between items-center p-2 border-b border-[#003366] bg-[#001122]">
+                    <div className="lg:hidden flex justify-between items-center p-2 border-b border-[#003366] bg-[#001122]">
                         <div className="flex gap-2 items-center">
                             <span className="text-[#00ccff] font-bold text-[10px]">{isLeft ? 'NAVIGATION' : 'STATUS'}</span>
                             <button
@@ -357,7 +357,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
             )}
 
             {/* Docked Left Panel Placeholder */}
-            <div className="hidden md:flex w-[220px] flex-col shrink-0 z-20 relative transition-all duration-300 h-full">
+            <div className="hidden lg:flex w-[220px] flex-col shrink-0 z-20 relative transition-all duration-300 h-full">
                 {leftMode === 'docked' && (
                     <div className="w-full h-full absolute inset-0">
                         {renderPanel('left')}
@@ -366,7 +366,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
             </div>
 
             {/* Render Left Panel (Floating or Mobile Docked) */}
-            {(leftMode === 'float' || (window.innerWidth < 768 && leftOpen)) && renderPanel('left')}
+            {(leftMode === 'float' || (window.innerWidth < 1024 && leftOpen)) && renderPanel('left')}
 
 
             {/* Center Column */}
@@ -379,8 +379,8 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
                     />
                 </div>
                 <div className="flex-1 relative pl-1 pr-1 pb-1 overflow-hidden min-h-0">
-                    <div className="w-full h-full bg-black rounded-tl-[20px] rounded-tr-[20px] md:rounded-tl-[50px] md:rounded-tr-[50px] border-t border-l border-r border-[#0055aa] shadow-[inset_0_10px_30px_rgba(0,0,0,1),0_-2px_10px_rgba(0,100,255,0.3)] flex flex-col overflow-hidden relative min-h-0">
-                        <div className="absolute top-0 left-[20px] right-[20px] md:left-[50px] md:right-[50px] h-[1px] bg-gradient-to-r from-transparent via-[#0088ff] to-transparent opacity-50 z-20"></div>
+                    <div className="w-full h-full bg-black rounded-tl-[20px] rounded-tr-[20px] lg:rounded-tl-[50px] lg:rounded-tr-[50px] border-t border-l border-r border-[#0055aa] shadow-[inset_0_10px_30px_rgba(0,0,0,1),0_-2px_10px_rgba(0,100,255,0.3)] flex flex-col overflow-hidden relative min-h-0">
+                        <div className="absolute top-0 left-[20px] right-[20px] lg:left-[50px] lg:right-[50px] h-[1px] bg-gradient-to-r from-transparent via-[#0088ff] to-transparent opacity-50 z-20"></div>
 
                         {/* Content */}
                         <CenterPanel
@@ -394,7 +394,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
             </div>
 
             {/* Docked Right Panel Placeholder */}
-            <div className="hidden md:flex w-[220px] flex-col shrink-0 z-20 relative transition-all duration-300 h-full">
+            <div className="hidden lg:flex w-[220px] flex-col shrink-0 z-20 relative transition-all duration-300 h-full">
                 {rightMode === 'docked' && (
                     <div className="w-full h-full absolute inset-0">
                         {renderPanel('right')}
@@ -403,7 +403,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
             </div>
 
             {/* Render Right Panel (Floating or Mobile Docked) */}
-            {(rightMode === 'float' || (window.innerWidth < 768 && rightOpen)) && renderPanel('right')}
+            {(rightMode === 'float' || (window.innerWidth < 1024 && rightOpen)) && renderPanel('right')}
 
         </div>
     );

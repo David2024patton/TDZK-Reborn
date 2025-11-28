@@ -120,7 +120,7 @@ export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: Sh
                     )}
                 </div>
 
-                <div className={`w-full ${isDocked ? 'max-w-[700px]' : 'max-w-[600px]'} space-y-4 flex flex-col items-center z-10 min-w-0 transition-[max-width] duration-300`}>
+                <div className={`w-full ${isDocked ? 'max-w-[1000px]' : 'max-w-[600px]'} space-y-4 flex flex-col items-center z-10 min-w-0 transition-[max-width] duration-300`}>
 
                     <div className="w-full bg-[#001122] border border-[#003355] py-1.5 flex justify-center items-center relative overflow-hidden rounded-sm shadow-md shrink-0">
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#004488]"></div>
