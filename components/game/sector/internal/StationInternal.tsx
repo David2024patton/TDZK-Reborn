@@ -26,7 +26,36 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
     const [bankBalance, setBankBalance] = useState(50000000);
     const [playerCash, setPlayerCash] = useState(10000000);
     const [transactionAmount, setTransactionAmount] = useState('');
+    const [transferTarget, setTransferTarget] = useState('');
+    const [transferAmount, setTransferAmount] = useState('');
+    const [donationAmount, setDonationAmount] = useState('');
     const [quantities, setQuantities] = useState<Record<string, string>>({});
+
+    const tabs = ['Ships', 'Upgrades', 'Weapons', 'Drones', 'Equipment', 'Items', 'Bounties', 'Bank'];
+
+    const MOCK_CLAIMABLE_BOUNTIES = [
+        { target: "Pirate Lord Vex", alliance: "PIR", status: "Eliminated", reward: "5,000,000" },
+        { target: "Rogue Drone 77", alliance: "AI", status: "Destroyed", reward: "500,000" },
+        { target: "Smuggler Han", alliance: "HUTT", status: "Captured", reward: "1,200,000" }
+    ];
+
+    const MOCK_PILOTS = [
+        "Ace Rimmer",
+        "Starbuck",
+        "Maverick",
+        "Han Solo",
+        "Ellen Ripley"
+    ];
+
+    // Interest calculation effect
+    React.useEffect(() => {
+        const interestRate = 0.1; // 10% interest
+        const interval = setInterval(() => {
+            setBankBalance(prev => Math.floor(prev * (1 + interestRate)));
+        }, 3600000); // 1 hour in milliseconds
+
+        return () => clearInterval(interval);
+    }, []);
 
     const handleQuantityChange = (id: string, value: string) => {
         // Allow empty string or numbers
@@ -39,28 +68,46 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
         return quantities[id] || '1';
     };
 
-    const tabs = ['Ships', 'Upgrades', 'Weapons', 'Drones', 'Equipment', 'Items', 'Bounties', 'Bank'];
-
-    const MOCK_CLAIMABLE_BOUNTIES = [
-        { target: "Pirate Lord Vex", alliance: "PIR", status: "Eliminated", reward: "5,000,000" },
-        { target: "Rogue Drone 77", alliance: "AI", status: "Destroyed", reward: "500,000" },
-        { target: "Smuggler Han", alliance: "HUTT", status: "Captured", reward: "1,200,000" }
-    ];
-
     const handleDeposit = () => {
-        const amount = parseInt(transactionAmount);
-        if (isNaN(amount) || amount <= 0 || amount > playerCash) return;
+        const amount = parseInt(transactionAmount.replace(/,/g, ''));
+        if (isNaN(amount) || amount <= 0) return;
+        if (amount > playerCash) return;
+
         setPlayerCash(prev => prev - amount);
         setBankBalance(prev => prev + amount);
         setTransactionAmount('');
     };
 
     const handleWithdraw = () => {
-        const amount = parseInt(transactionAmount);
-        if (isNaN(amount) || amount <= 0 || amount > bankBalance) return;
+        const amount = parseInt(transactionAmount.replace(/,/g, ''));
+        if (isNaN(amount) || amount <= 0) return;
+        if (amount > bankBalance) return;
+
         setBankBalance(prev => prev - amount);
         setPlayerCash(prev => prev + amount);
         setTransactionAmount('');
+    };
+
+    const handleTransfer = () => {
+        const amount = parseInt(transferAmount.replace(/,/g, ''));
+        if (isNaN(amount) || amount <= 0) return;
+        if (amount > bankBalance) return;
+        if (!transferTarget) return;
+
+        setBankBalance(prev => prev - amount);
+        setTransferAmount('');
+        setTransferTarget('');
+        console.log(`Transferred ${amount} to ${transferTarget}`);
+    };
+
+    const handleDonate = () => {
+        const amount = parseInt(donationAmount.replace(/,/g, ''));
+        if (isNaN(amount) || amount <= 0) return;
+        if (amount > bankBalance) return;
+
+        setBankBalance(prev => prev - amount);
+        setDonationAmount('');
+        console.log(`Donated ${amount} to Alliance`);
     };
 
     const getList = () => {
@@ -92,39 +139,115 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
         switch (activeTab) {
             case 'Bank':
                 return (
-                    <div className="p-6 flex flex-col items-center justify-center h-full gap-6">
-                        <div className="w-full max-w-[300px] bg-[#001122] border border-[#223344] p-4 rounded shadow-lg">
-                            <div className="text-[#667788] text-[10px] uppercase font-bold mb-1">Station Account Balance</div>
-                            <div className="text-[#00ff00] font-mono text-[24px] font-bold tracking-wider drop-shadow-[0_0_5px_rgba(0,255,0,0.5)]">
-                                ${bankBalance.toLocaleString()}
+                    <div className="p-4 flex flex-col h-full gap-4 overflow-y-auto">
+                        {/* Balances Section */}
+                        <div className="grid grid-cols-2 gap-4 shrink-0">
+                            <div className="bg-[#001122] border border-[#223344] p-4 rounded shadow-lg flex flex-col items-center justify-center relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-gradient-to-b from-[#00ff00]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="text-[#667788] text-[10px] uppercase font-bold mb-1 tracking-wider">Bank Account</div>
+                                <div className="text-[#00ff00] font-mono text-[24px] font-bold tracking-wider drop-shadow-[0_0_5px_rgba(0,255,0,0.5)]">
+                                    ${bankBalance.toLocaleString()}
+                                </div>
+                                <div className="text-[#004400] text-[9px] uppercase tracking-widest mt-1">Safe from Piracy</div>
+                            </div>
+                            <div className="bg-[#001122] border border-[#223344] p-4 rounded shadow-lg flex flex-col items-center justify-center relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-gradient-to-b from-[#00ccff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="text-[#667788] text-[10px] uppercase font-bold mb-1 tracking-wider">Wallet Cash</div>
+                                <div className="text-[#00ccff] font-mono text-[24px] font-bold tracking-wider drop-shadow-[0_0_5px_rgba(0,204,255,0.5)]">
+                                    ${playerCash.toLocaleString()}
+                                </div>
+                                <div className="text-[#003344] text-[9px] uppercase tracking-widest mt-1">At Risk</div>
                             </div>
                         </div>
 
-                        <div className="w-full max-w-[300px] flex flex-col gap-2">
-                            <div className="flex justify-between text-[11px] text-[#8899aa]">
-                                <span>Wallet Cash:</span>
-                                <span className="text-white font-mono">${playerCash.toLocaleString()}</span>
+                        {/* Operations Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 grow">
+
+                            {/* Deposit / Withdraw */}
+                            <div className="bg-[#0b131e] border border-[#112233] p-3 rounded flex flex-col gap-3">
+                                <div className="text-[#ddeeff] text-[11px] font-bold uppercase tracking-wide border-b border-[#223344] pb-1">
+                                    Teller Services
+                                </div>
+                                <div className="flex flex-col gap-2 grow justify-center">
+                                    <input
+                                        type="number"
+                                        value={transactionAmount}
+                                        onChange={(e) => setTransactionAmount(e.target.value)}
+                                        placeholder="Amount"
+                                        className="w-full bg-[#000810] border border-[#223344] text-white p-2 text-center font-mono focus:border-[#00ccff] focus:outline-none transition-colors text-[12px]"
+                                    />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            onClick={handleDeposit}
+                                            className="bg-[#003322] border border-[#006644] text-[#00ffaa] py-2 text-[11px] uppercase font-bold hover:bg-[#004433] transition-colors rounded-[2px]"
+                                        >
+                                            Deposit
+                                        </button>
+                                        <button
+                                            onClick={handleWithdraw}
+                                            className="bg-[#331100] border border-[#662200] text-[#ffaa00] py-2 text-[11px] uppercase font-bold hover:bg-[#441100] transition-colors rounded-[2px]"
+                                        >
+                                            Withdraw
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <input
-                                type="number"
-                                value={transactionAmount}
-                                onChange={(e) => setTransactionAmount(e.target.value)}
-                                placeholder="Enter Amount"
-                                className="w-full bg-[#000810] border border-[#223344] text-white p-2 text-center font-mono focus:border-[#00ccff] focus:outline-none transition-colors"
-                            />
-                            <div className="grid grid-cols-2 gap-2 mt-2">
-                                <button
-                                    onClick={handleDeposit}
-                                    className="bg-[#003322] border border-[#006644] text-[#00ffaa] py-2 text-[12px] uppercase font-bold hover:bg-[#004433] transition-colors"
-                                >
-                                    Deposit
-                                </button>
-                                <button
-                                    onClick={handleWithdraw}
-                                    className="bg-[#331100] border border-[#662200] text-[#ffaa00] py-2 text-[12px] uppercase font-bold hover:bg-[#441100] transition-colors"
-                                >
-                                    Withdraw
-                                </button>
+
+                            {/* Transfer */}
+                            <div className="bg-[#0b131e] border border-[#112233] p-3 rounded flex flex-col gap-3">
+                                <div className="text-[#ddeeff] text-[11px] font-bold uppercase tracking-wide border-b border-[#223344] pb-1">
+                                    Wire Transfer
+                                </div>
+                                <div className="flex flex-col gap-2 grow justify-center">
+                                    <select
+                                        value={transferTarget}
+                                        onChange={(e) => setTransferTarget(e.target.value)}
+                                        className="w-full bg-[#000810] border border-[#223344] text-white p-2 text-center focus:border-[#00ccff] focus:outline-none transition-colors text-[12px]"
+                                    >
+                                        <option value="">Select Pilot</option>
+                                        {MOCK_PILOTS.map(pilot => (
+                                            <option key={pilot} value={pilot}>{pilot}</option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        type="number"
+                                        value={transferAmount}
+                                        onChange={(e) => setTransferAmount(e.target.value)}
+                                        placeholder="Amount"
+                                        className="w-full bg-[#000810] border border-[#223344] text-white p-2 text-center font-mono focus:border-[#00ccff] focus:outline-none transition-colors text-[12px]"
+                                    />
+                                    <button
+                                        onClick={handleTransfer}
+                                        className="w-full bg-[#002244] border border-[#004488] text-[#00ccff] py-2 text-[11px] uppercase font-bold hover:bg-[#003355] transition-colors rounded-[2px]"
+                                    >
+                                        Transfer Funds
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Alliance */}
+                            <div className="bg-[#0b131e] border border-[#112233] p-3 rounded flex flex-col gap-3">
+                                <div className="text-[#ddeeff] text-[11px] font-bold uppercase tracking-wide border-b border-[#223344] pb-1">
+                                    Alliance Treasury
+                                </div>
+                                <div className="flex flex-col gap-2 grow justify-center">
+                                    <div className="text-[#667788] text-[10px] text-center italic mb-1">
+                                        Support your alliance by donating directly to the central bank.
+                                    </div>
+                                    <input
+                                        type="number"
+                                        value={donationAmount}
+                                        onChange={(e) => setDonationAmount(e.target.value)}
+                                        placeholder="Amount"
+                                        className="w-full bg-[#000810] border border-[#223344] text-white p-2 text-center font-mono focus:border-[#00ccff] focus:outline-none transition-colors text-[12px]"
+                                    />
+                                    <button
+                                        onClick={handleDonate}
+                                        className="w-full bg-[#220033] border border-[#550066] text-[#ff44ff] py-2 text-[11px] uppercase font-bold hover:bg-[#330044] transition-colors rounded-[2px]"
+                                    >
+                                        Donate
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -159,7 +282,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             case 'Ships':
                 return (
                     <>
-                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_100px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Class</div>
                             <div>Description</div>
                             <div className="text-right">Cost</div>
@@ -167,7 +290,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                         </div>
                         <div className="flex flex-col gap-1">
                             {getList().map((ship: any, i: number) => (
-                                <div key={i} className="grid grid-cols-[160px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                <div key={i} className="grid grid-cols-[160px_1fr_100px_100px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                     <div className="text-[#ddeeff] font-bold truncate">{ship.class}</div>
                                     <div className="flex flex-col justify-center h-full py-0.5">
                                         <div className="text-[#00ccff] font-bold text-[9px] leading-tight mb-0.5">
@@ -178,8 +301,9 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                                         </div>
                                     </div>
                                     <div className="text-right text-green-400 font-mono font-bold text-[13px]">${formatCost(ship.cost)}</div>
-                                    <div className="text-right pr-1 flex justify-end">
+                                    <div className="text-right pr-1 flex justify-end gap-1">
                                         <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
+                                        <button className="bg-[#330000] border border-[#660000] text-[#ff4444] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#ff4444] hover:text-white transition-colors uppercase w-[40px]">Sell</button>
                                     </div>
                                 </div>
                             ))}
@@ -189,7 +313,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             case 'Weapons':
                 return (
                     <>
-                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_110px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_130px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Name</div>
                             <div>Description</div>
                             <div className="text-right">Cost</div>
@@ -197,7 +321,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                         </div>
                         <div className="flex flex-col gap-1">
                             {getList().map((w: any, i: number) => (
-                                <div key={i} className="grid grid-cols-[160px_1fr_100px_110px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                <div key={i} className="grid grid-cols-[160px_1fr_100px_130px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                     <div className="text-[#ddeeff] font-bold truncate" title={w.name}>{w.name}</div>
                                     <div className="flex flex-col justify-center h-full py-0.5">
                                         <div className="text-[#00ccff] font-bold text-[9px] leading-tight mb-0.5">
@@ -216,6 +340,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                                             className="w-[30px] h-[20px] bg-[#000810] border border-[#223344] text-white text-[10px] text-center focus:border-[#00ccff] focus:outline-none"
                                         />
                                         <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
+                                        <button className="bg-[#330000] border border-[#660000] text-[#ff4444] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#ff4444] hover:text-white transition-colors uppercase w-[40px]">Sell</button>
                                     </div>
                                 </div>
                             ))}
@@ -225,7 +350,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             case 'Drones':
                 return (
                     <>
-                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_110px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_130px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Name</div>
                             <div>Description</div>
                             <div className="text-right">Cost</div>
@@ -235,7 +360,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                             {getList().map((d: any, i: number) => {
                                 const hasEmp = d.stats.emp && d.stats.emp !== 0;
                                 return (
-                                    <div key={i} className="grid grid-cols-[160px_1fr_100px_110px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                    <div key={i} className="grid grid-cols-[160px_1fr_100px_130px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                         <div className="text-[#ddeeff] font-bold truncate">{d.name}</div>
                                         <div className="flex flex-col justify-center h-full py-0.5">
                                             <div className="text-[#00ccff] font-bold text-[9px] leading-tight mb-0.5">
@@ -256,6 +381,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                                                 className="w-[30px] h-[20px] bg-[#000810] border border-[#223344] text-white text-[10px] text-center focus:border-[#00ccff] focus:outline-none"
                                             />
                                             <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
+                                            <button className="bg-[#330000] border border-[#660000] text-[#ff4444] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#ff4444] hover:text-white transition-colors uppercase w-[40px]">Sell</button>
                                         </div>
                                     </div>
                                 );
@@ -277,7 +403,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
 
                 return (
                     <>
-                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[180px_1fr_100px_110px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[180px_1fr_100px_130px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Equipment Name</div>
                             <div>Effect</div>
                             <div className="text-right">Cost</div>
@@ -285,7 +411,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                         </div>
                         <div className="flex flex-col gap-1">
                             {getList().map((item: any, i: number) => (
-                                <div key={i} className="grid grid-cols-[180px_1fr_100px_110px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                <div key={i} className="grid grid-cols-[180px_1fr_100px_130px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                     <div className="flex flex-col justify-center h-full">
                                         <div className="text-[#ddeeff] font-bold truncate leading-tight" title={item.name}>{item.name}</div>
                                         <div className={`text-[9px] px-1.5 py-0.5 rounded border w-fit mt-0.5 ${getTypeColor(item.type)}`}>
@@ -306,6 +432,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                                             className="w-[30px] h-[20px] bg-[#000810] border border-[#223344] text-white text-[10px] text-center focus:border-[#00ccff] focus:outline-none"
                                         />
                                         <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
+                                        <button className="bg-[#330000] border border-[#660000] text-[#ff4444] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#ff4444] hover:text-white transition-colors uppercase w-[40px]">Sell</button>
                                     </div>
                                 </div>
                             ))}
@@ -383,27 +510,35 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             case 'Items':
                 return (
                     <>
-                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[180px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[180px_1fr_100px_130px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Item Name</div>
                             <div>Description</div>
-                            <div className="text-right">Cargo</div>
+                            <div className="text-right">Cost</div>
                             <div className="text-right pr-1">Action</div>
                         </div>
                         <div className="flex flex-col gap-1">
                             {getList().map((item: any, i: number) => (
-                                <div key={i} className="grid grid-cols-[180px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                <div key={i} className="grid grid-cols-[180px_1fr_100px_130px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                     <div className="flex flex-col justify-center">
                                         <div className="text-[#ddeeff] font-bold truncate leading-tight" title={item.name}>{item.name}</div>
                                         <div className="text-[#445566] text-[9px] uppercase tracking-wider">{item.type}</div>
                                     </div>
-                                    <div className="text-[#8899aa] text-[9px] leading-tight flex items-center h-full" title={item.desc}>
-                                        {item.desc}
+                                    <div className="text-[#8899aa] text-[9px] leading-tight flex flex-col justify-center h-full" title={item.desc}>
+                                        <div>{item.desc}</div>
+                                        <div className="text-[#00ccff]">{item.cargo} Holds</div>
                                     </div>
-                                    <div className="text-right text-[#00ccff] font-mono font-bold text-[13px] leading-tight flex items-center justify-end h-full">
-                                        {item.cargo} Holds
+                                    <div className="text-right text-green-400 font-mono font-bold text-[13px] leading-tight flex items-center justify-end h-full">
+                                        ${formatCost(item.cost)}
                                     </div>
-                                    <div className="text-right pr-1 flex items-center justify-end h-full">
-                                        <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Info</button>
+                                    <div className="text-right pr-1 flex items-center justify-end h-full gap-1">
+                                        <input
+                                            type="text"
+                                            value={getQuantity(`item-${i}`)}
+                                            onChange={(e) => handleQuantityChange(`item-${i}`, e.target.value)}
+                                            className="w-[30px] h-[20px] bg-[#000810] border border-[#223344] text-white text-[10px] text-center focus:border-[#00ccff] focus:outline-none"
+                                        />
+                                        <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
+                                        <button className="bg-[#330000] border border-[#660000] text-[#ff4444] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#ff4444] hover:text-white transition-colors uppercase w-[40px]">Sell</button>
                                     </div>
                                 </div>
                             ))}
