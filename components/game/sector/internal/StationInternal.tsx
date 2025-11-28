@@ -216,7 +216,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             default:
                 return (
                     <>
-                        <div className="bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[150px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[260px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Name</div>
                             <div>Description</div>
                             <div className="text-right">Cost</div>
@@ -228,9 +228,9 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                                 const cost = item.cost || item.base_cost || "N/A";
                                 const desc = item.desc || item.description || "";
                                 return (
-                                    <div key={i} className="grid grid-cols-[150px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
-                                        <div className="text-[#ddeeff] font-bold truncate" title={name}>{name}</div>
-                                        <div className="text-[#8899aa] text-[10px] truncate" title={desc}>{desc}</div>
+                                    <div key={i} className="grid grid-cols-[260px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                        <div className="text-[#ddeeff] font-bold leading-tight" title={name}>{name}</div>
+                                        <div className="text-[#8899aa] text-[9px] truncate" title={desc}>{desc}</div>
                                         <div className="text-right text-green-400 font-mono font-bold">${String(cost).replace(/\s/g, '')}</div>
                                         <div className="text-right pr-1">
                                             <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 py-0.5 rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-full">Buy</button>
