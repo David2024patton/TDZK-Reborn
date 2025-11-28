@@ -26,6 +26,18 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
     const [bankBalance, setBankBalance] = useState(50000000);
     const [playerCash, setPlayerCash] = useState(10000000);
     const [transactionAmount, setTransactionAmount] = useState('');
+    const [quantities, setQuantities] = useState<Record<string, string>>({});
+
+    const handleQuantityChange = (id: string, value: string) => {
+        // Allow empty string or numbers
+        if (value === '' || /^\d+$/.test(value)) {
+            setQuantities(prev => ({ ...prev, [id]: value }));
+        }
+    };
+
+    const getQuantity = (id: string) => {
+        return quantities[id] || '1';
+    };
 
     const tabs = ['Ships', 'Upgrades', 'Weapons', 'Drones', 'Equipment', 'Items', 'Bounties', 'Bank'];
 
@@ -177,7 +189,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             case 'Weapons':
                 return (
                     <>
-                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_110px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Name</div>
                             <div>Description</div>
                             <div className="text-right">Cost</div>
@@ -185,7 +197,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                         </div>
                         <div className="flex flex-col gap-1">
                             {getList().map((w: any, i: number) => (
-                                <div key={i} className="grid grid-cols-[160px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                <div key={i} className="grid grid-cols-[160px_1fr_100px_110px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                     <div className="text-[#ddeeff] font-bold truncate" title={w.name}>{w.name}</div>
                                     <div className="flex flex-col justify-center h-full py-0.5">
                                         <div className="text-[#00ccff] font-bold text-[9px] leading-tight mb-0.5">
@@ -196,7 +208,13 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                                         </div>
                                     </div>
                                     <div className="text-right text-green-400 font-mono font-bold text-[13px]">${formatCost(w.cost)}</div>
-                                    <div className="text-right pr-1 flex justify-end">
+                                    <div className="text-right pr-1 flex justify-end gap-1 items-center">
+                                        <input
+                                            type="text"
+                                            value={getQuantity(`weapon-${i}`)}
+                                            onChange={(e) => handleQuantityChange(`weapon-${i}`, e.target.value)}
+                                            className="w-[30px] h-[20px] bg-[#000810] border border-[#223344] text-white text-[10px] text-center focus:border-[#00ccff] focus:outline-none"
+                                        />
                                         <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
                                     </div>
                                 </div>
@@ -207,7 +225,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             case 'Drones':
                 return (
                     <>
-                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_110px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Name</div>
                             <div>Description</div>
                             <div className="text-right">Cost</div>
@@ -217,7 +235,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                             {getList().map((d: any, i: number) => {
                                 const hasEmp = d.stats.emp && d.stats.emp !== 0;
                                 return (
-                                    <div key={i} className="grid grid-cols-[160px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                    <div key={i} className="grid grid-cols-[160px_1fr_100px_110px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                         <div className="text-[#ddeeff] font-bold truncate">{d.name}</div>
                                         <div className="flex flex-col justify-center h-full py-0.5">
                                             <div className="text-[#00ccff] font-bold text-[9px] leading-tight mb-0.5">
@@ -230,7 +248,13 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                                             </div>
                                         </div>
                                         <div className="text-right text-green-400 font-mono font-bold">N/A</div>
-                                        <div className="text-right pr-1 flex justify-end">
+                                        <div className="text-right pr-1 flex justify-end gap-1 items-center">
+                                            <input
+                                                type="text"
+                                                value={getQuantity(`drone-${i}`)}
+                                                onChange={(e) => handleQuantityChange(`drone-${i}`, e.target.value)}
+                                                className="w-[30px] h-[20px] bg-[#000810] border border-[#223344] text-white text-[10px] text-center focus:border-[#00ccff] focus:outline-none"
+                                            />
                                             <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
                                         </div>
                                     </div>
@@ -239,7 +263,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                         </div>
                     </>
                 );
-            case 'Equipment':
+            case 'Equipment': {
                 const getTypeColor = (type: string) => {
                     switch (type) {
                         case 'Aura': return 'text-purple-400 border-purple-900/50 bg-purple-950/20';
@@ -253,7 +277,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
 
                 return (
                     <>
-                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[180px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[180px_1fr_100px_110px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Equipment Name</div>
                             <div>Effect</div>
                             <div className="text-right">Cost</div>
@@ -261,7 +285,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                         </div>
                         <div className="flex flex-col gap-1">
                             {getList().map((item: any, i: number) => (
-                                <div key={i} className="grid grid-cols-[180px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                <div key={i} className="grid grid-cols-[180px_1fr_100px_110px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                     <div className="flex flex-col justify-center h-full">
                                         <div className="text-[#ddeeff] font-bold truncate leading-tight" title={item.name}>{item.name}</div>
                                         <div className={`text-[9px] px-1.5 py-0.5 rounded border w-fit mt-0.5 ${getTypeColor(item.type)}`}>
@@ -274,7 +298,13 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                                     <div className="text-right text-green-400 font-mono font-bold text-[13px] leading-tight flex items-center justify-end h-full">
                                         ${formatCost(item.cost)}
                                     </div>
-                                    <div className="text-right pr-1 flex items-center justify-end h-full">
+                                    <div className="text-right pr-1 flex items-center justify-end h-full gap-1">
+                                        <input
+                                            type="text"
+                                            value={getQuantity(`equip-${i}`)}
+                                            onChange={(e) => handleQuantityChange(`equip-${i}`, e.target.value)}
+                                            className="w-[30px] h-[20px] bg-[#000810] border border-[#223344] text-white text-[10px] text-center focus:border-[#00ccff] focus:outline-none"
+                                        />
                                         <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
                                     </div>
                                 </div>
@@ -282,25 +312,48 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                         </div>
                     </>
                 );
-            case 'Upgrades':
+            }
+            case 'Upgrades': {
+                const DOWNGRADE_MAP: Record<string, string> = {
+                    "Additional Drone Hangars": "Remove Drone Hangars",
+                    "Additional Primary Weapon": "Remove Primary Weapon",
+                    "Additional Secondary Weapon": "Remove Secondary Weapon",
+                    "Cargo Holds Upgrade": "Cargo Hold Downgrade",
+                    "Main Engine Upgrade": "Main Engine Downgrade",
+                    "Armor Integrity Upgrade": "Armor Strength Downgrade",
+                    "Armor Upgrade": "Armor Downgrade",
+                    "Damage Amplifier": "Downgrade Damage Amplifier",
+                    "Maneuverability Upgrade": "Maneuverability Downgrade",
+                    "Power Battery Upgrade": "Power Battery Downgrade",
+                    "Power Generator Upgrade": "Power Generator Downgrade",
+                    "Shield Battery Upgrade": "Shield Battery Downgrade",
+                    "Shield Generator Upgrade": "Shield Generator Downgrade",
+                    "Stealth Coating Upgrade": "Stealth Coating Downgrade",
+                    "Targeting Computer Upgrade": "Targeting Computer Downgrade"
+                };
+
+                const upgradesList = getList().filter((u: any) => u.level > 0);
+                const allUpgrades = getList();
+
                 return (
                     <>
-                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[250px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[250px_1fr_100px_150px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Upgrade Name</div>
                             <div>Effect</div>
                             <div className="text-right">Cost</div>
                             <div className="text-right pr-1">Action</div>
                         </div>
                         <div className="flex flex-col gap-1">
-                            {getList().map((u: any, i: number) => {
-                                const isDowngrade = u.level < 0;
+                            {upgradesList.map((u: any, i: number) => {
+                                const downgradeName = DOWNGRADE_MAP[u.upgrade];
+                                const downgradeItem = allUpgrades.find((d: any) => d.upgrade === downgradeName);
+
                                 return (
-                                    <div key={i} className="grid grid-cols-[250px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                    <div key={i} className="grid grid-cols-[250px_1fr_100px_150px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                         <div className="flex flex-col justify-center h-full">
-                                            <div className={`font-bold truncate leading-tight ${isDowngrade ? 'text-red-400' : 'text-[#ddeeff]'}`} title={u.upgrade}>
+                                            <div className="font-bold text-[#ddeeff] truncate leading-tight" title={u.upgrade}>
                                                 {u.upgrade}
                                             </div>
-                                            {isDowngrade && <div className="text-[9px] text-red-500/70 uppercase tracking-wider font-bold">Downgrade</div>}
                                         </div>
                                         <div className="text-[#8899aa] text-[9px] leading-tight flex items-center h-full" title={u.description}>
                                             {u.description}
@@ -308,10 +361,17 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                                         <div className="text-right text-green-400 font-mono font-bold text-[13px] leading-tight flex items-center justify-end h-full">
                                             ${formatCost(u.base_cost)}
                                         </div>
-                                        <div className="text-right pr-1 flex items-center justify-end h-full">
-                                            <button className={`border text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] transition-colors uppercase w-[40px] ${isDowngrade ? 'bg-[#330000] border-[#660000] text-[#ff4444] hover:bg-[#ff4444] hover:text-white' : 'bg-[#002244] border-[#004488] text-[#00ccff] hover:bg-[#00ccff] hover:text-black hover:font-bold'}`}>
-                                                {isDowngrade ? 'Sell' : 'Buy'}
-                                            </button>
+                                        <div className="text-right pr-1 flex items-center justify-end h-full gap-1">
+                                            <input
+                                                type="text"
+                                                value={getQuantity(`upgrade-${i}`)}
+                                                onChange={(e) => handleQuantityChange(`upgrade-${i}`, e.target.value)}
+                                                className="w-[30px] h-[20px] bg-[#000810] border border-[#223344] text-white text-[10px] text-center focus:border-[#00ccff] focus:outline-none"
+                                            />
+                                            <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
+                                            {downgradeItem && (
+                                                <button className="bg-[#330000] border border-[#660000] text-[#ff4444] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#ff4444] hover:text-white transition-colors uppercase w-[40px]">Sell</button>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -319,6 +379,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                         </div>
                     </>
                 );
+            }
             case 'Items':
                 return (
                     <>
