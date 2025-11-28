@@ -265,7 +265,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({ isFloating = false }) =>
                         }
             `}
                 >
-                    DEPLOY
+                    {isDeployed ? 'DEPLOYED' : 'DEPLOY'}
                 </button>
             </div>
 
