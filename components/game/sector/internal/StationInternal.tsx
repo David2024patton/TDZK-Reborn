@@ -4,6 +4,7 @@ import { SHIPS, UPGRADES, WEAPONS, DRONES, EQUIPMENT, ITEMS } from '../../../../
 interface StationInternalProps {
     name: string;
     onUndock?: () => void;
+    onOpenHelp?: (topic: string) => void;
 }
 
 const IdentityColumn: React.FC<{ name: string, alliance?: string }> = ({ name, alliance }) => {
@@ -20,7 +21,7 @@ const IdentityColumn: React.FC<{ name: string, alliance?: string }> = ({ name, a
     );
 };
 
-export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock }) => {
+export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock, onOpenHelp }) => {
     const [activeTab, setActiveTab] = useState('Ships');
     const [bankBalance, setBankBalance] = useState(50000000);
     const [playerCash, setPlayerCash] = useState(10000000);
@@ -62,7 +63,18 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
         }
     };
 
+    const formatCost = (val: string | number) => {
+        if (val === undefined || val === null) return "N/A";
+        let cost = typeof val === 'number' ? val.toLocaleString() : String(val);
 
+        return cost
+            .replace(/(\d+),500,000/g, "$1.5M")
+            .replace(/(\d+),250,000/g, "$1.25M")
+            .replace(/(\d+),750,000/g, "$1.75M")
+            .replace(/(\d+),000,000/g, "$1M")
+            .replace(/(\d+),000/g, "$1k")
+            .replace(/\s?\*\s?Ship\s?Size/gi, " x Size");
+    };
 
     const renderContent = () => {
         switch (activeTab) {
@@ -108,24 +120,24 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             case 'Bounties':
                 return (
                     <>
-                        <div className="bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[200px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[200px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="text-left pl-1">Identity</div>
                             <div className="text-left pl-1">Target</div>
-                            <div className="text-right">Reward</div>
+                            <div className="text-right pr-6">Reward</div>
                             <div className="text-right pr-1">Action</div>
                         </div>
                         <div className="flex flex-col gap-1">
                             {MOCK_CLAIMABLE_BOUNTIES.map((bounty, i) => (
-                                <div key={i} className="grid grid-cols-[200px_1fr_100px_80px] gap-x-1 border-b border-[#002244] hover:bg-[#001133] text-[11px] group cursor-pointer bg-[#020408] transition-colors py-1 px-1 h-[34px] items-center">
+                                <div key={i} className="grid grid-cols-[200px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                     <IdentityColumn name={bounty.target} alliance={bounty.alliance} />
-                                    <div className="flex items-center pl-1 overflow-hidden h-[24px]">
-                                        <span className="text-white font-bold text-[14px] truncate drop-shadow-md group-hover:text-[#ff4444] transition-colors">{bounty.target}</span>
+                                    <div className="flex items-center pl-1 overflow-hidden h-full">
+                                        <span className="text-[#ddeeff] font-bold truncate group-hover:text-[#ff4444] transition-colors">{bounty.target}</span>
                                     </div>
-                                    <div className="flex items-center justify-end h-[24px]">
-                                        <span className="text-[#00ff00] font-bold text-[14px] font-mono tracking-wide">${bounty.reward}</span>
+                                    <div className="text-right text-green-400 font-mono font-bold text-[13px] flex items-center justify-end h-full pr-6">
+                                        ${formatCost(bounty.reward.replace(/,/g, ''))}
                                     </div>
-                                    <div className="flex items-center justify-end pr-1 h-[24px]">
-                                        <button className="bg-[#221100] border border-[#ffaa00] text-[#ffaa00] text-[10px] px-2 py-0.5 rounded-[2px] hover:bg-[#ffaa00] hover:text-black hover:font-bold transition-colors uppercase shadow-[0_0_5px_rgba(255,170,0,0.3)]">Claim</button>
+                                    <div className="text-right pr-1 flex items-center justify-end h-full">
+                                        <button className="bg-[#221100] border border-[#ffaa00] text-[#ffaa00] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#ffaa00] hover:text-black hover:font-bold transition-colors uppercase w-[50px] shadow-[0_0_5px_rgba(255,170,0,0.3)]">Claim</button>
                                     </div>
                                 </div>
                             ))}
@@ -135,24 +147,27 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             case 'Ships':
                 return (
                     <>
-                        <div className="bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[120px_80px_100px_60px_1fr_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Class</div>
-                            <div>Size/Spd</div>
-                            <div>Arm/Shld</div>
-                            <div>Holds</div>
+                            <div>Description</div>
                             <div className="text-right">Cost</div>
                             <div className="text-right pr-1">Action</div>
                         </div>
                         <div className="flex flex-col gap-1">
                             {getList().map((ship: any, i: number) => (
-                                <div key={i} className="grid grid-cols-[120px_80px_100px_60px_1fr_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 h-[34px]">
+                                <div key={i} className="grid grid-cols-[160px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                     <div className="text-[#ddeeff] font-bold truncate">{ship.class}</div>
-                                    <div className="text-[#8899aa]">{ship.size} / <span className="text-[#00ccff]">{ship.speed}</span></div>
-                                    <div className="text-[#8899aa]">{ship.armor} / <span className="text-[#00ccff]">{ship.shields}</span></div>
-                                    <div className="text-[#ddeeff]">{ship.holds}</div>
-                                    <div className="text-right text-green-400 font-mono font-bold">${String(ship.cost).replace(/\s/g, '')}</div>
-                                    <div className="text-right pr-1">
-                                        <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 py-0.5 rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-full">Buy</button>
+                                    <div className="flex flex-col justify-center h-full py-0.5">
+                                        <div className="text-[#00ccff] font-bold text-[9px] leading-tight mb-0.5">
+                                            Size: {ship.size} | Spd: {ship.speed} | Arm: {ship.armor} | Shld: {ship.shields} | Holds: {ship.holds}
+                                        </div>
+                                        <div className="text-[#8899aa] text-[9px] truncate leading-tight" title={ship.desc}>
+                                            {ship.desc}
+                                        </div>
+                                    </div>
+                                    <div className="text-right text-green-400 font-mono font-bold text-[13px]">${formatCost(ship.cost)}</div>
+                                    <div className="text-right pr-1 flex justify-end">
+                                        <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
                                     </div>
                                 </div>
                             ))}
@@ -162,24 +177,27 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             case 'Weapons':
                 return (
                     <>
-                        <div className="bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[140px_80px_40px_100px_1fr_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Name</div>
-                            <div>Type</div>
-                            <div>Acc</div>
-                            <div>Dmg (S/A)</div>
+                            <div>Description</div>
                             <div className="text-right">Cost</div>
                             <div className="text-right pr-1">Action</div>
                         </div>
                         <div className="flex flex-col gap-1">
                             {getList().map((w: any, i: number) => (
-                                <div key={i} className="grid grid-cols-[140px_80px_40px_100px_1fr_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 h-[34px]">
+                                <div key={i} className="grid grid-cols-[160px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                     <div className="text-[#ddeeff] font-bold truncate" title={w.name}>{w.name}</div>
-                                    <div className="text-[#8899aa] text-[10px]">{w.type}-{w.class}</div>
-                                    <div className="text-[#ddeeff]">{w.acc}</div>
-                                    <div className="text-[#8899aa] text-[10px]">{w.shield} / {w.armor}</div>
-                                    <div className="text-right text-green-400 font-mono font-bold">${String(w.cost).replace(/\s/g, '')}</div>
-                                    <div className="text-right pr-1">
-                                        <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 py-0.5 rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-full">Buy</button>
+                                    <div className="flex flex-col justify-center h-full py-0.5">
+                                        <div className="text-[#00ccff] font-bold text-[9px] leading-tight mb-0.5">
+                                            Type: {w.type}-{w.class} | Acc: {w.acc} | Dmg: {w.shield}/{w.armor}
+                                        </div>
+                                        <div className="text-[#8899aa] text-[9px] truncate leading-tight" title={w.desc}>
+                                            {w.desc}
+                                        </div>
+                                    </div>
+                                    <div className="text-right text-green-400 font-mono font-bold text-[13px]">${formatCost(w.cost)}</div>
+                                    <div className="text-right pr-1 flex justify-end">
+                                        <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
                                     </div>
                                 </div>
                             ))}
@@ -189,24 +207,142 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             case 'Drones':
                 return (
                     <>
-                        <div className="bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[120px_100px_60px_60px_1fr_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Name</div>
-                            <div>Cmb/Arm</div>
-                            <div>EMP</div>
-                            <div>Limit</div>
+                            <div>Description</div>
                             <div className="text-right">Cost</div>
                             <div className="text-right pr-1">Action</div>
                         </div>
                         <div className="flex flex-col gap-1">
-                            {getList().map((d: any, i: number) => (
-                                <div key={i} className="grid grid-cols-[120px_100px_60px_60px_1fr_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 h-[34px]">
-                                    <div className="text-[#ddeeff] font-bold truncate">{d.name}</div>
-                                    <div className="text-[#8899aa]">{d.stats.combat} / {d.stats.armor}</div>
-                                    <div className="text-[#ddeeff]">{d.stats.emp}</div>
-                                    <div className="text-[#ddeeff]">{d.limit}</div>
-                                    <div className="text-right text-green-400 font-mono font-bold">N/A</div>
-                                    <div className="text-right pr-1">
-                                        <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 py-0.5 rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-full">Buy</button>
+                            {getList().map((d: any, i: number) => {
+                                const hasEmp = d.stats.emp && d.stats.emp !== 0;
+                                return (
+                                    <div key={i} className="grid grid-cols-[160px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                        <div className="text-[#ddeeff] font-bold truncate">{d.name}</div>
+                                        <div className="flex flex-col justify-center h-full py-0.5">
+                                            <div className="text-[#00ccff] font-bold text-[9px] leading-tight mb-0.5">
+                                                Cmb: {d.stats.combat} | Arm: {d.stats.armor}
+                                                {hasEmp && <span className="text-[#ff4444]"> | EMP: {d.stats.emp}</span>}
+                                                <span className="text-[#ddeeff]"> | Limit: {d.limit}</span>
+                                            </div>
+                                            <div className="text-[#8899aa] text-[9px] truncate leading-tight" title={d.description}>
+                                                {d.description}
+                                            </div>
+                                        </div>
+                                        <div className="text-right text-green-400 font-mono font-bold">N/A</div>
+                                        <div className="text-right pr-1 flex justify-end">
+                                            <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </>
+                );
+            case 'Equipment':
+                const getTypeColor = (type: string) => {
+                    switch (type) {
+                        case 'Aura': return 'text-purple-400 border-purple-900/50 bg-purple-950/20';
+                        case 'Defensive': return 'text-blue-400 border-blue-900/50 bg-blue-950/20';
+                        case 'Offensive': return 'text-red-400 border-red-900/50 bg-red-950/20';
+                        case 'Repair': return 'text-green-400 border-green-900/50 bg-green-950/20';
+                        case 'Resourcing': return 'text-yellow-400 border-yellow-900/50 bg-yellow-950/20';
+                        default: return 'text-gray-400 border-gray-800 bg-gray-900/20';
+                    }
+                };
+
+                return (
+                    <>
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[180px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                            <div className="pl-1">Equipment Name</div>
+                            <div>Effect</div>
+                            <div className="text-right">Cost</div>
+                            <div className="text-right pr-1">Action</div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            {getList().map((item: any, i: number) => (
+                                <div key={i} className="grid grid-cols-[180px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                    <div className="flex flex-col justify-center h-full">
+                                        <div className="text-[#ddeeff] font-bold truncate leading-tight" title={item.name}>{item.name}</div>
+                                        <div className={`text-[9px] px-1.5 py-0.5 rounded border w-fit mt-0.5 ${getTypeColor(item.type)}`}>
+                                            {item.type}
+                                        </div>
+                                    </div>
+                                    <div className="text-[#8899aa] text-[9px] leading-tight flex items-center h-full" title={item.desc}>
+                                        {item.desc}
+                                    </div>
+                                    <div className="text-right text-green-400 font-mono font-bold text-[13px] leading-tight flex items-center justify-end h-full">
+                                        ${formatCost(item.cost)}
+                                    </div>
+                                    <div className="text-right pr-1 flex items-center justify-end h-full">
+                                        <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                );
+            case 'Upgrades':
+                return (
+                    <>
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[250px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                            <div className="pl-1">Upgrade Name</div>
+                            <div>Effect</div>
+                            <div className="text-right">Cost</div>
+                            <div className="text-right pr-1">Action</div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            {getList().map((u: any, i: number) => {
+                                const isDowngrade = u.level < 0;
+                                return (
+                                    <div key={i} className="grid grid-cols-[250px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                        <div className="flex flex-col justify-center h-full">
+                                            <div className={`font-bold truncate leading-tight ${isDowngrade ? 'text-red-400' : 'text-[#ddeeff]'}`} title={u.upgrade}>
+                                                {u.upgrade}
+                                            </div>
+                                            {isDowngrade && <div className="text-[9px] text-red-500/70 uppercase tracking-wider font-bold">Downgrade</div>}
+                                        </div>
+                                        <div className="text-[#8899aa] text-[9px] leading-tight flex items-center h-full" title={u.description}>
+                                            {u.description}
+                                        </div>
+                                        <div className="text-right text-green-400 font-mono font-bold text-[13px] leading-tight flex items-center justify-end h-full">
+                                            ${formatCost(u.base_cost)}
+                                        </div>
+                                        <div className="text-right pr-1 flex items-center justify-end h-full">
+                                            <button className={`border text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] transition-colors uppercase w-[40px] ${isDowngrade ? 'bg-[#330000] border-[#660000] text-[#ff4444] hover:bg-[#ff4444] hover:text-white' : 'bg-[#002244] border-[#004488] text-[#00ccff] hover:bg-[#00ccff] hover:text-black hover:font-bold'}`}>
+                                                {isDowngrade ? 'Sell' : 'Buy'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </>
+                );
+            case 'Items':
+                return (
+                    <>
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[180px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                            <div className="pl-1">Item Name</div>
+                            <div>Description</div>
+                            <div className="text-right">Cargo</div>
+                            <div className="text-right pr-1">Action</div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            {getList().map((item: any, i: number) => (
+                                <div key={i} className="grid grid-cols-[180px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                    <div className="flex flex-col justify-center">
+                                        <div className="text-[#ddeeff] font-bold truncate leading-tight" title={item.name}>{item.name}</div>
+                                        <div className="text-[#445566] text-[9px] uppercase tracking-wider">{item.type}</div>
+                                    </div>
+                                    <div className="text-[#8899aa] text-[9px] leading-tight flex items-center h-full" title={item.desc}>
+                                        {item.desc}
+                                    </div>
+                                    <div className="text-right text-[#00ccff] font-mono font-bold text-[13px] leading-tight flex items-center justify-end h-full">
+                                        {item.cargo} Holds
+                                    </div>
+                                    <div className="text-right pr-1 flex items-center justify-end h-full">
+                                        <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Info</button>
                                     </div>
                                 </div>
                             ))}
@@ -216,7 +352,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             default:
                 return (
                     <>
-                        <div className="bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[260px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
+                        <div className="sticky top-0 z-10 bg-gradient-to-r from-[#001133]/90 via-[#002244]/90 to-[#000011]/90 border border-[#003366] border-b-0 px-1 py-1 h-[28px] backdrop-blur-sm shadow-md grid grid-cols-[160px_1fr_100px_80px] gap-x-1 items-center text-[#667788] text-[10px] uppercase tracking-wider mb-1">
                             <div className="pl-1">Name</div>
                             <div>Description</div>
                             <div className="text-right">Cost</div>
@@ -228,12 +364,12 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                                 const cost = item.cost || item.base_cost || "N/A";
                                 const desc = item.desc || item.description || "";
                                 return (
-                                    <div key={i} className="grid grid-cols-[260px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
+                                    <div key={i} className="grid grid-cols-[160px_1fr_100px_80px] gap-x-1 border-b border-[#112233] hover:bg-[#0a1525] text-[11px] items-center py-1 px-1 min-h-[34px]">
                                         <div className="text-[#ddeeff] font-bold leading-tight" title={name}>{name}</div>
-                                        <div className="text-[#8899aa] text-[9px] truncate" title={desc}>{desc}</div>
-                                        <div className="text-right text-green-400 font-mono font-bold">${String(cost).replace(/\s/g, '')}</div>
-                                        <div className="text-right pr-1">
-                                            <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 py-0.5 rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-full">Buy</button>
+                                        <div className="text-[#8899aa] text-[9px] truncate leading-snug" title={desc}>{desc}</div>
+                                        <div className="text-right text-green-400 font-mono font-bold text-[13px]">${String(cost).replace(/\s/g, '')}</div>
+                                        <div className="text-right pr-1 flex justify-end">
+                                            <button className="bg-[#002244] border border-[#004488] text-[#00ccff] text-[10px] px-2 h-[20px] py-0 flex items-center justify-center rounded-[2px] hover:bg-[#00ccff] hover:text-black hover:font-bold transition-colors uppercase w-[40px]">Buy</button>
                                         </div>
                                     </div>
                                 );
@@ -249,7 +385,21 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
             <div className="bg-gradient-to-r from-[#002244] to-[#001122] border-b border-[#0055aa] py-2 px-4 flex justify-between items-center">
                 <div>
                     <div className="text-white font-bold text-[16px] tracking-wide uppercase">{name}</div>
-                    <div className="text-[#00ccff] text-[11px] tracking-wider">STATION SERVICES</div>
+                    <div className="flex items-center gap-4">
+                        <div className="text-[#00ccff] text-[11px] tracking-wider">STATION SERVICES</div>
+                        <button
+                            onClick={() => {
+                                let topic = activeTab;
+                                if (activeTab === 'Bounties') topic = 'Combat';
+                                if (activeTab === 'Bank') topic = 'Trading';
+                                onOpenHelp?.(topic);
+                            }}
+                            className="bg-[#003344] hover:bg-[#004455] border border-[#006688] text-[#00ccff] hover:text-white text-[10px] uppercase flex items-center gap-1.5 transition-all group px-2 py-0.5 rounded shadow-[0_0_5px_rgba(0,204,255,0.2)]"
+                        >
+                            <svg className="w-3 h-3 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            {activeTab} Manual
+                        </button>
+                    </div>
                 </div>
                 <button
                     onClick={onUndock}
@@ -257,7 +407,7 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                 >
                     Undock
                 </button>
-            </div>
+            </div >
 
             <div className="flex flex-wrap bg-[#000810] border-b border-[#223344]">
                 {tabs.map(tab => (
@@ -277,9 +427,9 @@ export const StationInternal: React.FC<StationInternalProps> = ({ name, onUndock
                 ))}
             </div>
 
-            <div className="h-[350px] overflow-y-auto scrollbar-retro bg-[#050a10] p-1">
+            <div className="h-[600px] overflow-y-auto scrollbar-retro bg-[#050a10] p-1">
                 {renderContent()}
             </div>
-        </div>
+        </div >
     );
 };

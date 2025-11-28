@@ -226,6 +226,7 @@ export const CenterPanel: React.FC<CenterPanelProps> = ({ view, currentSector, o
     const [examineTarget, setExamineTarget] = useState<ShipData | null>(null);
     const [actionTarget, setActionTarget] = useState<{ type: 'attack' | 'raid', data: any } | null>(null);
     const [combatTarget, setCombatTarget] = useState<any | null>(null);
+    const [helpTopic, setHelpTopic] = useState<string | undefined>(undefined);
 
     const handleTriggerAction = (type: 'attack' | 'raid', target: any) => {
         // Only skip the "Engage Enemy" screen (ActionModal) for player ships
@@ -238,6 +239,11 @@ export const CenterPanel: React.FC<CenterPanelProps> = ({ view, currentSector, o
         }
     };
 
+    const handleOpenHelp = (topic: string) => {
+        setHelpTopic(topic);
+        onNavigate?.('help');
+    };
+
     return (
         <div className="w-full h-full relative flex flex-col">
             {view === 'sector' && (
@@ -245,6 +251,7 @@ export const CenterPanel: React.FC<CenterPanelProps> = ({ view, currentSector, o
                     currentSector={currentSector}
                     onExamine={setExamineTarget}
                     onTriggerAction={handleTriggerAction}
+                    onOpenHelp={handleOpenHelp}
                 />
             )}
             {view === 'system' && <SystemMap currentSector={currentSector} onNavigateToSector={onSystemSelect} />}
@@ -260,7 +267,7 @@ export const CenterPanel: React.FC<CenterPanelProps> = ({ view, currentSector, o
             {view === 'forces' && <ForcesView />}
             {view === 'planets' && <PlanetsView />}
             {view === 'webboard' && <WebBoardView />}
-            {view === 'help' && <HelpView onClose={() => onNavigate?.('sector')} />}
+            {view === 'help' && <HelpView onClose={() => onNavigate?.('sector')} initialTopic={helpTopic} />}
 
             {examineTarget && (
                 <ExamineModal

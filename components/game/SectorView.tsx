@@ -35,7 +35,7 @@ const getStationName = (sector: number) => {
     return names[sector % names.length];
 };
 
-export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: ShipData) => void, onTriggerAction: (type: 'attack' | 'raid', target: any) => void }> = ({ currentSector, onExamine, onTriggerAction }) => {
+export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: ShipData) => void, onTriggerAction: (type: 'attack' | 'raid', target: any) => void, onOpenHelp?: (topic: string) => void }> = ({ currentSector, onExamine, onTriggerAction, onOpenHelp }) => {
     const [dockedLocation, setDockedLocation] = useState<'station' | 'port' | 'planet' | null>(null);
     const [planetMessages, setPlanetMessages] = useState({
         public: "Phoenix Property.\nClosed for: Non-Related to Phoenix and Production-buildings.",
@@ -165,6 +165,7 @@ export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: Sh
                         <StationInternal
                             name={stationData.name}
                             onUndock={() => setDockedLocation(null)}
+                            onOpenHelp={onOpenHelp}
                         />
                     )}
 
