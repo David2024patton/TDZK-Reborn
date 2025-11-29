@@ -1,27 +1,30 @@
 
 import React, { useState } from 'react';
+import { useGame } from '../src/context/GameContext';
 
 // Import data from centralized TypeScript file to avoid JSON module resolution issues
 import {
-  SHIPS, WEAPONS, DRONES, UPGRADES, GOODS, ITEMS, 
-  SECTOR_TYPES, AURAS, BUILDINGS, GUIDES, EQUIPMENT, 
-  RACES, FAQ, EQUATIONS, FACTIONS, TERMS, INTRODUCTION
+    SHIPS, WEAPONS, DRONES, UPGRADES, GOODS, ITEMS,
+    SECTOR_TYPES, AURAS, BUILDINGS, GUIDES, EQUIPMENT,
+    RACES, FAQ, EQUATIONS, FACTIONS, TERMS, INTRODUCTION
 } from '../data/helpData';
 
 interface HelpViewProps {
-  onClose: () => void;
+    onClose: () => void;
+    initialTopic?: string;
 }
 
 const HELP_TOPICS = [
-  { category: "General", items: ["Introduction", "Web Board"] },
-  { category: "Lore", items: ["Races", "Factions"] },
-  { category: "Miscellaneous", items: ["FAQ", "Equations", "Terms"] },
-  { category: "Reference", items: ["Ships", "Weapons", "Equipment", "Upgrades", "Drones", "Goods", "Items", "Sector Types", "Auras", "Buildings"] },
-  { category: "Guides", items: ["Survival", "Trading", "Combat", "War", "Ports", "Planets", "Alliances"] }
+    { category: "General", items: ["Introduction", "Web Board"] },
+    { category: "Lore", items: ["Races", "Factions"] },
+    { category: "Miscellaneous", items: ["FAQ", "Equations", "Terms"] },
+    { category: "Reference", items: ["Ships", "Weapons", "Equipment", "Upgrades", "Drones", "Goods", "Items", "Sector Types", "Auras", "Buildings"] },
+    { category: "Guides", items: ["Survival", "Trading", "Combat", "War", "Ports", "Planets", "Alliances"] }
 ];
 
-export const HelpView: React.FC<HelpViewProps> = ({ onClose }) => {
-    const [selectedTopic, setSelectedTopic] = useState('Introduction');
+export const HelpView: React.FC<HelpViewProps> = ({ onClose, initialTopic }) => {
+    const { setAdmin, player } = useGame();
+    const [selectedTopic, setSelectedTopic] = useState(initialTopic || 'Introduction');
 
     // Static data map pointing to imported constants
     const data: any = {
@@ -48,7 +51,7 @@ export const HelpView: React.FC<HelpViewProps> = ({ onClose }) => {
 
     const renderDataTable = (columns: string[], tableData: any[], keyField: string) => {
         if (!tableData) return <div className="text-red-500">No data available</div>;
-        
+
         return (
             <div className="overflow-x-auto bg-[#0a111a] border border-[#223344] rounded p-4">
                 <table className="w-full text-left border-collapse text-[11px] font-mono whitespace-nowrap">
@@ -65,14 +68,14 @@ export const HelpView: React.FC<HelpViewProps> = ({ onClose }) => {
                                     // Fuzzy match for keys like "Base Cost" -> "base_cost" or "cost"
                                     const dataKey = Object.keys(row).find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === key.replace(/[^a-z0-9]/g, ''));
                                     let val = row[dataKey || key] || '-';
-                                    
+
                                     let style = "text-gray-400";
                                     if (col === "Name" || col === "Class" || col === "Type" || col === "Upgrade" || col === "Term") style = "font-bold text-white";
                                     if (col.includes("Cost") || col === "Value") style = "text-green-400 text-right";
                                     if (col === "Acc" || col === "Speed") style = "text-yellow-400";
                                     if (col.includes("Shield")) style = "text-blue-300";
                                     if (col === "Desc" || col === "Description" || col === "Definition") style = "text-gray-500 italic whitespace-normal min-w-[200px]";
-                                    
+
                                     return <td key={col} className={`p-2 ${style}`}>{val}</td>
                                 })}
                             </tr>
@@ -98,7 +101,7 @@ export const HelpView: React.FC<HelpViewProps> = ({ onClose }) => {
                             {(item.cost || item.base_cost) && <span className="text-green-400 font-mono text-[11px]">${item.cost || item.base_cost}</span>}
                         </div>
                         <p className="text-[#cccccc] text-[11px] leading-relaxed whitespace-pre-line">{item.desc || item.description}</p>
-                        
+
                         {/* Bonuses/Penalties for Races */}
                         {item.bonuses && item.bonuses.length > 0 && (
                             <div className="mt-2 pt-2 border-t border-[#223344]">
@@ -119,14 +122,14 @@ export const HelpView: React.FC<HelpViewProps> = ({ onClose }) => {
 
                         {/* Stats Grid if available */}
                         {item.stats && !Array.isArray(item.stats) && (
-                             <div className="grid grid-cols-2 gap-2 mt-2 text-[10px] border-t border-[#223344] pt-2">
+                            <div className="grid grid-cols-2 gap-2 mt-2 text-[10px] border-t border-[#223344] pt-2">
                                 {Object.entries(item.stats).map(([k, v]) => (
                                     <div key={k} className="flex justify-between">
                                         <span className="text-[#667788] uppercase">{k}:</span>
                                         <span className="text-white">{String(v)}</span>
                                     </div>
                                 ))}
-                             </div>
+                            </div>
                         )}
                     </div>
                 ))}
@@ -152,8 +155,8 @@ export const HelpView: React.FC<HelpViewProps> = ({ onClose }) => {
 
     const renderBuildings = () => (
         <div className="mt-8 pt-4 border-t border-[#223344]">
-             <h3 className="text-[#00ccff] font-bold text-[16px] mb-3 uppercase tracking-widest">Building Specifications</h3>
-             {renderDataTable(["Name", "Type", "Cost", "Goods", "Curve", "Max", "Desc"], data.buildings, "name")}
+            <h3 className="text-[#00ccff] font-bold text-[16px] mb-3 uppercase tracking-widest">Building Specifications</h3>
+            {renderDataTable(["Name", "Type", "Cost", "Goods", "Curve", "Max", "Desc"], data.buildings, "name")}
         </div>
     );
 
@@ -344,13 +347,13 @@ export const HelpView: React.FC<HelpViewProps> = ({ onClose }) => {
                         {renderDataTable(["Term", "Definition"], data.terms, "term")}
                     </div>
                 );
-                
+
                 // Guides
                 case 'Ports': return renderGuide(data.guides.Ports);
                 case 'Planets': return (
                     <div className="space-y-8">
-                         {renderGuide(data.guides.Planets)}
-                         {renderBuildings()}
+                        {renderGuide(data.guides.Planets)}
+                        {renderBuildings()}
                     </div>
                 );
                 case 'Alliances': return renderGuide(data.guides.Alliances);
@@ -358,10 +361,10 @@ export const HelpView: React.FC<HelpViewProps> = ({ onClose }) => {
                 case 'Trading': return renderGuide(data.guides.Trading);
                 case 'Combat': return renderGuide(data.guides.Combat);
                 case 'War': return renderGuide(data.guides.War);
-                
+
                 case 'Introduction': return (
                     <div className="animate-in fade-in">
-                         {renderGuide(data.introduction)}
+                        {renderGuide(data.introduction)}
                     </div>
                 );
                 case 'Web Board': return (
@@ -396,9 +399,23 @@ export const HelpView: React.FC<HelpViewProps> = ({ onClose }) => {
                         <div className="text-[#445566] text-[9px] tracking-[0.3em]">KNOWLEDGE BASE V3.0</div>
                     </div>
                 </div>
-                <button onClick={onClose} className="bg-[#112233] hover:bg-[#224466] text-[#00ccff] border border-[#004488] px-4 py-2 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-2">
-                    Return <span className="text-[14px] leading-none">×</span>
-                </button>
+
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => {
+                            const newStatus = !player.isAdmin;
+                            setAdmin(newStatus);
+                            alert(`Admin Mode: ${newStatus ? 'ENABLED' : 'DISABLED'}`);
+                        }}
+                        className="bg-[#331111] hover:bg-[#552222] text-[#ff5555] border border-[#662222] px-3 py-2 rounded text-[10px] font-bold uppercase tracking-wider"
+                    >
+                        {player.isAdmin ? 'Disable Admin' : 'Enable Admin'}
+                    </button>
+                    <button onClick={onClose} className="bg-[#112233] hover:bg-[#224466] text-[#00ccff] border border-[#004488] px-4 py-2 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-2">
+                        Return <span className="text-[14px] leading-none">×</span>
+                    </button>
+                </div>
+
             </div>
 
             {/* Body */}
@@ -410,9 +427,9 @@ export const HelpView: React.FC<HelpViewProps> = ({ onClose }) => {
                             <h3 className="text-[#445566] font-bold text-[10px] uppercase tracking-widest mb-2 pl-2 border-l-2 border-[#00ccff]">{section.category}</h3>
                             <div className="flex flex-col pl-3 space-y-1 border-l border-[#112233] ml-[1px]">
                                 {section.items.map(item => (
-                                    <button 
-                                        key={item} 
-                                        onClick={() => setSelectedTopic(item)} 
+                                    <button
+                                        key={item}
+                                        onClick={() => setSelectedTopic(item)}
                                         className={`text-left text-[11px] py-1.5 px-3 rounded transition-all ${selectedTopic === item ? 'bg-[#002244] text-white font-bold pl-4 border-l-2 border-[#00ccff]' : 'text-[#8899aa] hover:text-[#00ccff] hover:pl-4 border-l-2 border-transparent'}`}
                                     >
                                         {item}

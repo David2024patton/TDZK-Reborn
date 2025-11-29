@@ -1,57 +1,10 @@
 
 import React, { useState } from 'react';
-
-interface SystemNode {
-    id: number;
-    name: string;
-    x: number;
-    y: number;
-    region: string;
-    connections: number[];
-}
-
-const SYSTEMS: SystemNode[] = [
-    // Core Worlds
-    { id: 1, name: "Neo-Taenaria", x: 500, y: 300, region: "Core Worlds", connections: [2, 3, 9] },
-    { id: 2, name: "Derivia", x: 450, y: 350, region: "Core Worlds", connections: [1, 4, 9] },
-    { id: 3, name: "Zallus", x: 550, y: 350, region: "Core Worlds", connections: [1, 5, 9] },
-    { id: 9, name: "Nexus", x: 500, y: 400, region: "Core Worlds", connections: [1, 2, 3, 4, 5, 6] },
-
-    // Inner Worlds
-    { id: 4, name: "Kitara", x: 400, y: 450, region: "Inner Worlds", connections: [2, 9, 7] },
-    { id: 5, name: "Tamara", x: 600, y: 450, region: "Inner Worlds", connections: [3, 9, 8] },
-    { id: 6, name: "Chronos", x: 500, y: 500, region: "Inner Worlds", connections: [9, 7, 8, 10] },
-
-    // Pleiora Nebula
-    { id: 7, name: "Heart of Pleiora", x: 300, y: 500, region: "Pleiora Nebula", connections: [4, 6, 11] },
-    { id: 8, name: "Magnus", x: 700, y: 500, region: "Pleiora Nebula", connections: [5, 6, 12] },
-
-    // Outer Rim
-    { id: 10, name: "Cryptos", x: 500, y: 600, region: "Outer Rim", connections: [6, 11, 12, 13] },
-    { id: 11, name: "Imrasael", x: 350, y: 650, region: "Outer Rim", connections: [7, 10, 14] },
-    { id: 12, name: "Vanguard", x: 650, y: 650, region: "Outer Rim", connections: [8, 10, 15] },
-
-    // Pirate Territories
-    { id: 13, name: "Skull's Haven", x: 500, y: 750, region: "Pirate Territories", connections: [10, 14, 15] },
-    { id: 14, name: "Black Market", x: 300, y: 750, region: "Pirate Territories", connections: [11, 13] },
-    { id: 15, name: "Corsair's Rest", x: 700, y: 750, region: "Pirate Territories", connections: [12, 13] },
-
-    // Independent Worlds
-    { id: 16, name: "Freeport 7", x: 200, y: 400, region: "Independent Worlds", connections: [7] },
-    { id: 17, name: "Outpost Alpha", x: 800, y: 400, region: "Independent Worlds", connections: [8] },
-    { id: 18, name: "Hermit's Void", x: 500, y: 150, region: "Independent Worlds", connections: [1] }
-];
-
-const REGION_COLORS: Record<string, string> = {
-    "Core Worlds": "#00ccff",
-    "Inner Worlds": "#00ff88",
-    "Pleiora Nebula": "#aa00ff",
-    "Outer Rim": "#ffaa00",
-    "Pirate Territories": "#ff0000",
-    "Independent Worlds": "#aaaaaa"
-};
+import { useGame } from '../../src/context/GameContext';
+import { REGION_COLORS, SystemNode } from '../../src/data/universe';
 
 export const GalaxyMap: React.FC = () => {
+    const { systems, player, warpSystem } = useGame();
     const [hoveredSystem, setHoveredSystem] = useState<SystemNode | null>(null);
     const [selectedSystem, setSelectedSystem] = useState<SystemNode | null>(null);
 
@@ -60,9 +13,9 @@ export const GalaxyMap: React.FC = () => {
         const uniqueLines = new Set<string>();
         const lineElements: React.ReactNode[] = [];
 
-        SYSTEMS.forEach(sys => {
+        systems.forEach(sys => {
             sys.connections.forEach(targetId => {
-                const target = SYSTEMS.find(s => s.id === targetId);
+                const target = systems.find(s => s.id === targetId);
                 if (target) {
                     const key = [sys.id, target.id].sort().join('-');
                     if (!uniqueLines.has(key)) {
@@ -84,7 +37,27 @@ export const GalaxyMap: React.FC = () => {
             });
         });
         return lineElements;
-    }, []);
+    }, [systems]);
+
+    const handleWarp = (targetSystem: SystemNode) => {
+        // Check if player is in the correct wormhole sector of their CURRENT system
+        // Current System Data
+        const currentSystemData = systems.find(s => s.id === player.currentSystem);
+
+        if (!currentSystemData) return;
+
+        // Check if current sector is the wormhole
+        if (player.currentSector === currentSystemData.wormholeSector) {
+            // Check if target is connected
+            if (currentSystemData.connections.includes(targetSystem.id)) {
+                warpSystem(targetSystem.id);
+            } else {
+                alert("System not connected via jump node.");
+            }
+        } else {
+            alert(`You must be at the Wormhole (Sector ${currentSystemData.wormholeSector}) to jump.`);
+        }
+    };
 
     return (
         <div className="w-full h-full flex flex-col items-center bg-[#020408] relative overflow-hidden">
@@ -94,7 +67,7 @@ export const GalaxyMap: React.FC = () => {
                     Galaxy Map
                 </h2>
                 <div className="text-[#667788] text-[10px] font-mono pr-2">
-                    {SYSTEMS.length} Systems Detected
+                    {systems.length} Systems Detected
                 </div>
             </div>
 
@@ -113,9 +86,10 @@ export const GalaxyMap: React.FC = () => {
                     <g className="opacity-60">{lines}</g>
 
                     {/* Systems */}
-                    {SYSTEMS.map(sys => {
+                    {systems.map(sys => {
                         const isHovered = hoveredSystem?.id === sys.id;
                         const isSelected = selectedSystem?.id === sys.id;
+                        const isCurrent = player.currentSystem === sys.id;
                         const isConnected = selectedSystem?.connections.includes(sys.id);
                         const color = REGION_COLORS[sys.region] || "#ffffff";
 
@@ -128,8 +102,8 @@ export const GalaxyMap: React.FC = () => {
                                 className="cursor-pointer transition-all duration-300 group"
                             >
                                 {/* Glow Effect */}
-                                {(isHovered || isSelected) && (
-                                    <circle cx={sys.x} cy={sys.y} r="15" fill={color} opacity="0.2" className="animate-pulse" />
+                                {(isHovered || isSelected || isCurrent) && (
+                                    <circle cx={sys.x} cy={sys.y} r={isCurrent ? "20" : "15"} fill={isCurrent ? "#00ccff" : color} opacity="0.2" className="animate-pulse" />
                                 )}
 
                                 {/* Connection Highlight Line (if selected) */}
@@ -146,7 +120,7 @@ export const GalaxyMap: React.FC = () => {
                                     cx={sys.x}
                                     cy={sys.y}
                                     r={isSelected ? 6 : 4}
-                                    fill={isSelected ? "#ffffff" : "#000000"}
+                                    fill={isSelected ? "#ffffff" : (isCurrent ? "#00ccff" : "#000000")}
                                     stroke={color}
                                     strokeWidth={isSelected ? 2 : 1.5}
                                     className="transition-all duration-300"
@@ -175,6 +149,12 @@ export const GalaxyMap: React.FC = () => {
                         {(hoveredSystem || selectedSystem) && (() => {
                             const sys = hoveredSystem || selectedSystem!;
                             const color = REGION_COLORS[sys.region];
+                            const isCurrent = player.currentSystem === sys.id;
+
+                            // Check connection to current system
+                            const currentSys = systems.find(s => s.id === player.currentSystem);
+                            const isConnectedToCurrent = currentSys?.connections.includes(sys.id);
+
                             return (
                                 <>
                                     <div className="flex justify-between items-start border-b border-[#223344] pb-2 mb-2">
@@ -200,9 +180,27 @@ export const GalaxyMap: React.FC = () => {
                                             <span className="text-[#00ccff]">10 Turns</span>
                                         </div>
                                     </div>
-                                    {selectedSystem && selectedSystem.id === sys.id && (
-                                        <div className="mt-3 pt-2 border-t border-[#223344] text-center text-[#00ccff] text-[10px] font-bold animate-pulse">
-                                            [ SYSTEM SELECTED ]
+
+                                    {isCurrent && (
+                                        <div className="mt-3 pt-2 border-t border-[#223344] text-center text-green-400 text-[10px] font-bold">
+                                            [ CURRENT LOCATION ]
+                                        </div>
+                                    )}
+
+                                    {selectedSystem && selectedSystem.id === sys.id && !isCurrent && (
+                                        <div className="mt-3 pt-2 border-t border-[#223344] flex flex-col gap-2 pointer-events-auto">
+                                            {isConnectedToCurrent ? (
+                                                <button
+                                                    onClick={() => handleWarp(sys)}
+                                                    className="w-full bg-[#004488] hover:bg-[#0055aa] text-white font-bold py-1 px-2 rounded text-[10px] transition-colors"
+                                                >
+                                                    INITIATE JUMP
+                                                </button>
+                                            ) : (
+                                                <div className="text-center text-red-500 text-[10px]">
+                                                    NO DIRECT CONNECTION
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </>

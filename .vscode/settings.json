@@ -1,0 +1,11 @@
+{
+    "files.autoSave": "afterDelay",
+    "editor.mouseWheelZoom": true,
+    "editor.autoIndentOnPaste": true,
+    "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+    "editor.experimentalGpuAcceleration": "on",
+    "files.autoSaveWorkspaceFilesOnly": true,
+    "java.project.outputPath": "",
+    "editor.linkedEditing": true,
+    "typescript.tsserver.watchOptions": "vscode"
+}

@@ -1,11 +1,17 @@
 import React from 'react';
+import { useGame } from '../../../src/context/GameContext';
 
 interface SectorNavigationProps {
     currentSector: string;
 }
 
 export const SectorNavigation: React.FC<SectorNavigationProps> = ({ currentSector }) => {
+    const { moveSector } = useGame();
     const baseSector = parseInt(currentSector) || 11199;
+
+    const handleMove = (sector: number) => {
+        moveSector(sector.toString());
+    };
 
     return (
         <div className="flex justify-center w-full mt-2">
@@ -25,19 +31,19 @@ export const SectorNavigation: React.FC<SectorNavigationProps> = ({ currentSecto
                     </div>
 
                     <div className="flex flex-col justify-center items-center gap-0.5 font-mono text-[10px] flex-1">
-                        <div className="text-[#445566] hover:text-[#00ccff] cursor-pointer mb-0.5">[{baseSector - 15}]</div>
+                        <div onClick={() => handleMove(baseSector - 15)} className="text-[#445566] hover:text-[#00ccff] cursor-pointer mb-0.5">[{baseSector - 15}]</div>
                         <div className="text-[#223344] h-2 w-[1px] bg-[#223344]"></div>
 
                         <div className="flex items-center gap-1.5">
-                            <span className="text-[#445566] hover:text-[#00ccff] cursor-pointer">[{baseSector - 1}]</span>
+                            <span onClick={() => handleMove(baseSector - 1)} className="text-[#445566] hover:text-[#00ccff] cursor-pointer">[{baseSector - 1}]</span>
                             <span className="text-[#223344]">-</span>
                             <span className="text-white font-bold drop-shadow-[0_0_5px_rgba(0,200,255,0.5)] bg-[#004488] px-1 rounded-sm">[{currentSector}]</span>
                             <span className="text-[#223344]">-</span>
-                            <span className="text-[#445566] hover:text-[#00ccff] cursor-pointer">[{baseSector + 1}]</span>
+                            <span onClick={() => handleMove(baseSector + 1)} className="text-[#445566] hover:text-[#00ccff] cursor-pointer">[{baseSector + 1}]</span>
                         </div>
 
                         <div className="text-[#223344] h-2 w-[1px] bg-[#223344]"></div>
-                        <div className="text-[#445566] hover:text-[#00ccff] cursor-pointer mt-0.5">[{baseSector + 15}]</div>
+                        <div onClick={() => handleMove(baseSector + 15)} className="text-[#445566] hover:text-[#00ccff] cursor-pointer mt-0.5">[{baseSector + 15}]</div>
                     </div>
                 </div>
             </div>

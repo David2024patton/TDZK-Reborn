@@ -9,9 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
     "fs": "^0.0.1-security",
     "notebooklm-mcp": "^1.2.0",
     "path": "^0.12.7",
+    "pg": "^8.16.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

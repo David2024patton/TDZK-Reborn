@@ -1,5 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
+import { useGame } from '../../src/context/GameContext';
+import { SYSTEMS, SystemNode } from '../../src/data/universe';
 
 interface SystemMapProps {
     currentSector: string;
@@ -14,7 +16,8 @@ const SECTOR_TYPES = {
     PLANET: 2,
     BOTH: 3,
     ASTEROID: 4,
-    NEBULA: 5
+    NEBULA: 5,
+    WORMHOLE: 6 // New Type
 };
 
 const AURA_TYPES = {
@@ -25,24 +28,37 @@ const AURA_TYPES = {
 };
 
 export const SystemMap: React.FC<SystemMapProps> = ({ currentSector, onNavigateToSector }) => {
+    const { player, systems, moveSector } = useGame();
     const [activeLayer, setActiveLayer] = useState<MapLayer>('SECTOR');
-    const baseSector = Math.floor(parseInt(currentSector) / 100) * 100;
 
-    // Mock Data Generation
+    const currentSectorNum = parseInt(currentSector);
+    const baseSector = Math.floor(currentSectorNum / 100) * 100;
+
+    // Find if this system has a wormhole
+    const currentSystemData = systems.find(s => s.id === player.currentSystem);
+    const wormholeSector = currentSystemData?.wormholeSector;
+
+    // Mock Data Generation (Deterministic based on sector number)
     const grid = useMemo(() => Array.from({ length: 100 }, (_, i) => {
         const sectorNum = baseSector + i;
-        const isCurrent = sectorNum === parseInt(currentSector);
+        const isCurrent = sectorNum === currentSectorNum;
 
         // Deterministic pseudo-random based on sector number
         const rand = (n: number) => Math.sin(n) * 10000 - Math.floor(Math.sin(n) * 10000);
         const r = rand(sectorNum);
 
         let type = SECTOR_TYPES.EMPTY;
-        if (r > 0.8) type = SECTOR_TYPES.PORT;
-        else if (r > 0.9) type = SECTOR_TYPES.PLANET;
-        else if (r > 0.95) type = SECTOR_TYPES.BOTH;
-        else if (r < 0.1) type = SECTOR_TYPES.ASTEROID;
-        else if (r < 0.2 && r > 0.1) type = SECTOR_TYPES.NEBULA;
+
+        // Explicitly set Wormhole if it matches
+        if (sectorNum === wormholeSector) {
+            type = SECTOR_TYPES.WORMHOLE;
+        } else {
+            if (r > 0.95) type = SECTOR_TYPES.BOTH;
+            else if (r > 0.9) type = SECTOR_TYPES.PLANET;
+            else if (r > 0.8) type = SECTOR_TYPES.PORT;
+            else if (r < 0.1) type = SECTOR_TYPES.ASTEROID;
+            else if (r < 0.2 && r > 0.1) type = SECTOR_TYPES.NEBULA;
+        }
 
         let aura = AURA_TYPES.NONE;
         if (r > 0.7 && r < 0.8) aura = AURA_TYPES.IONIZED;
@@ -58,13 +74,35 @@ export const SystemMap: React.FC<SystemMapProps> = ({ currentSector, onNavigateT
             deaths,
             isCurrent
         };
-    }), [baseSector, currentSector]);
+    }), [baseSector, currentSectorNum, wormholeSector]);
+
+    const handleSectorClick = (sector: number) => {
+        // Basic adjacency check: +/- 1 or +/- 10 (grid movement)
+        // For now, let's just allow clicking any sector in the system to move (teleport for testing)
+        // Or implement the "adjacent only" rule if desired.
+        // Let's stick to the plan: "Click adjacent sectors".
+
+        const diff = Math.abs(sector - currentSectorNum);
+        const isAdjacent = diff === 1 || diff === 10;
+
+        // Allow move if adjacent OR if it's the current sector (no-op)
+        // Actually, for better UX in this prototype, let's allow clicking anywhere in the system
+        // but maybe show a cost?
+        // Let's just call the context move.
+
+        if (onNavigateToSector) {
+            onNavigateToSector(sector.toString());
+        } else {
+            moveSector(sector);
+        }
+    };
 
     const getCellColor = (cell: typeof grid[0]) => {
         if (cell.isCurrent) return 'bg-[#ffffff] text-black font-bold animate-pulse';
 
         switch (activeLayer) {
             case 'SECTOR':
+                if (cell.type === SECTOR_TYPES.WORMHOLE) return 'bg-[#440088] text-fuchsia-300 border-fuchsia-600 animate-pulse'; // Wormhole
                 if (cell.type === SECTOR_TYPES.PORT) return 'bg-[#333300] text-yellow-200 border-yellow-900'; // Yellowish
                 if (cell.type === SECTOR_TYPES.PLANET) return 'bg-[#003300] text-green-200 border-green-900'; // Greenish
                 if (cell.type === SECTOR_TYPES.BOTH) return 'bg-[#003333] text-cyan-200 border-cyan-900'; // Cyan
@@ -89,6 +127,7 @@ export const SystemMap: React.FC<SystemMapProps> = ({ currentSector, onNavigateT
 
     const getCellContent = (cell: typeof grid[0]) => {
         if (activeLayer === 'DEATHS' && cell.deaths > 0) return "☠";
+        if (cell.type === SECTOR_TYPES.WORMHOLE) return "WH";
         return cell.sector;
     };
 
@@ -126,7 +165,7 @@ export const SystemMap: React.FC<SystemMapProps> = ({ currentSector, onNavigateT
                     {grid.map((cell) => (
                         <div
                             key={cell.sector}
-                            onClick={() => onNavigateToSector?.(cell.sector.toString())}
+                            onClick={() => handleSectorClick(cell.sector)}
                             className={`
                                 aspect-square border-[0.5px] text-[8px] md:text-[9px] flex items-center justify-center cursor-pointer transition-colors relative
                                 ${getCellColor(cell)}
@@ -151,6 +190,7 @@ export const SystemMap: React.FC<SystemMapProps> = ({ currentSector, onNavigateT
                         <div>
                             <h3 className="text-white font-bold border-b border-[#223344] mb-2">Sector Types</h3>
                             <div className="space-y-1">
+                                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#440088] border border-fuchsia-600"></div> <span className="text-fuchsia-300">Wormhole (Jump)</span></div>
                                 <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#333300] border border-yellow-900"></div> <span className="text-yellow-200">Port (Trading)</span></div>
                                 <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#003300] border border-green-900"></div> <span className="text-green-200">Planet (Colonizable)</span></div>
                                 <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#222222] border border-gray-700"></div> <span className="text-gray-400">Asteroid (Ore)</span></div>

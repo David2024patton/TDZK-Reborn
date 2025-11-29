@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Taenaria Derivia Zallus Kitara</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background-color: #000000;
+        color: #cccccc;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        font-size: 11px;
+      }
+      
+      /* SCROLLBAR STYLING */
+      
+      /* 
+         Mobile/Touch Devices: 
+         We rely on native browser behavior which handles "fade out on idle" and "show on touch" automatically.
+         We do NOT apply global custom styles here so native overlay scrollbars work.
+      */
+
+      /* Desktop/Mouse Devices: Custom Retro Scrollbars */
+      @media (pointer: fine) {
+        ::-webkit-scrollbar {
+          width: 5px;
+          height: 5px;
+        }
+        
+        /* Visible by default */
+        ::-webkit-scrollbar-track {
+          background: #000022; 
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #003366;
+          border: 1px solid #0066cc;
+          border-radius: 2px;
+        }
+        
+        /* Hover effect */
+        ::-webkit-scrollbar-thumb:hover {
+          background: #004488;
+          border-color: #00ccff;
+        }
+      }
+
+      .retro-input {
+        background-color: #000033;
+        border: 1px solid #003399;
+        color: #ffffff;
+        font-family: Verdana, sans-serif;
+        font-size: 11px;
+        box-shadow: inset 1px 1px 2px #000000;
+      }
+      .retro-btn {
+        background-color: #000033;
+        border: 1px solid #0066cc;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 11px;
+        font-family: Verdana, sans-serif;
+      }
+      .retro-btn:hover {
+        background-color: #003366;
+      }
+      .news-header {
+        background: linear-gradient(to right, #000033, #000066);
+        border-bottom: 1px solid #003399;
+      }
+
+      /* Starfield Animation */
+      @keyframes animStar {
+        from { transform: translateY(0px); }
+        to { transform: translateY(-2000px); }
+      }
+      
+      .star-layer {
+        width: 1px;
+        height: 1px;
+        background: transparent;
+        box-shadow: var(--shadows);
+        animation: animStar linear infinite;
+      }
+      
+      .star-layer:after {
+        content: " ";
+        position: absolute;
+        top: 2000px;
+        width: 1px;
+        height: 1px;
+        background: transparent;
+        box-shadow: var(--shadows);
+      }
+    </style>
+
+<link rel="stylesheet" href="/index.css">
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "fs": "https://aistudiocdn.com/fs@^0.0.1-security",
+    "path": "https://aistudiocdn.com/path@^0.12.7"
+  }
+}
+</script>
+  <script type="module" crossorigin src="/assets/index-5WyJko1R.js"></script>
+</head>
+  <body>
+    <div id="root"></div>
+</body>
+</html>

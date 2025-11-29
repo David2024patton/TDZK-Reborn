@@ -9,8 +9,10 @@ import { SystemMap } from './SystemMap';
 import { SectorView } from './SectorView';
 import { GalaxyMap } from './GalaxyMap';
 import { GenericView } from './GenericView';
-import { HelpView } from './HelpView';
+import { HelpView } from '../HelpView';
 import { RankingsView } from './RankingsView';
+import { useGame } from '../../src/context/GameContext';
+
 import { ForcesView } from './ForcesView';
 import { PlanetsView } from './PlanetsView';
 import { WebBoardView } from './WebBoardView';
@@ -21,6 +23,7 @@ import { NewsView } from './NewsView';
 import { NoticesView } from './NoticesView';
 import { ShipData } from './types';
 import { CombatView } from './CombatView';
+import { AdminDashboard } from '../../src/components/admin/AdminDashboard';
 
 // --- Helper Components ---
 
@@ -163,7 +166,7 @@ const ExamineModal: React.FC<ExamineModalProps> = ({ ship, onClose, onAttack }) 
                                 {ship.shipName || "Unidentified Vessel"}
                             </div>
                             <div className="text-[#ffff00] text-[10px] mb-1">{ship.shipClass}</div>
-                            <div className="text-[#00ccff] text-[10px] font-bold mb-1">Level: <span className="text-white">{ship.shipLevel}</span></div>
+                            <div className="text-[#00ccff] text-[10px] font-bold mb-1">Level: <span className="text-white">{ship.playerLevel}</span></div>
                             <div className="text-[#ffff00] text-[16px] font-bold tracking-wider mb-2">{ship.rating}</div>
                             <div className="flex flex-col gap-1 items-start">
                                 {ship.status?.map(s => (
@@ -268,6 +271,7 @@ export const CenterPanel: React.FC<CenterPanelProps> = ({ view, currentSector, o
             {view === 'planets' && <PlanetsView />}
             {view === 'webboard' && <WebBoardView />}
             {view === 'help' && <HelpView onClose={() => onNavigate?.('sector')} initialTopic={helpTopic} />}
+            {view === 'admin' && <AdminDashboard />}
 
             {examineTarget && (
                 <ExamineModal

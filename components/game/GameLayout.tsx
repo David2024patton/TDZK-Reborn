@@ -1,23 +1,26 @@
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TopPanel } from './TopPanel';
 import { LeftPanel } from './LeftPanel';
 import { RightPanel } from './RightPanel';
 import { CenterPanel } from './CenterPanel';
-import { HelpView } from './HelpView';
+import { HelpView } from '../HelpView';
 import { DPad } from './DPad';
+import { useGame } from '../../src/context/GameContext';
 
 interface GameLayoutProps {
     onLogout: () => void;
 }
 
 type PanelMode = 'docked' | 'float';
-export type ViewType = 'sector' | 'system' | 'galaxy' | 'help' | 'alliance' | 'alliance_list' | 'news' | 'notices' | 'online' | 'stats' | 'bounties' | 'rankings' | 'forces' | 'planets' | 'webboard';
+export type ViewType = 'sector' | 'system' | 'galaxy' | 'help' | 'alliance' | 'alliance_list' | 'news' | 'notices' | 'online' | 'stats' | 'bounties' | 'rankings' | 'forces' | 'planets' | 'webboard' | 'admin';
 
 export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
-    // Global Game State
+    // Global Game State from Context
+    const { player, moveSector, warpSystem } = useGame();
+
     const [activeView, setActiveView] = useState<ViewType>('sector');
-    const [currentSector, setCurrentSector] = useState('11199');
+    // Removed local currentSector state, using player.currentSector
 
     // Panel Visibility States
     const [leftOpen, setLeftOpen] = useState(true);
@@ -105,13 +108,22 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
     };
 
     const handleWarp = (sector: string) => {
-        setCurrentSector(sector);
+        // setCurrentSector(sector); // No longer needed, handled by context if we implement warp logic here
+        // For now, assume Warp input is just a sector jump for testing or admin?
+        // Or is it the "Warp To" box?
+        const sectorNum = parseInt(sector);
+        if (!isNaN(sectorNum)) {
+            moveSector(sectorNum);
+        }
         setActiveView('sector');
     };
 
     const handleSystemSelect = (sector: string) => {
-        setCurrentSector(sector);
-        setActiveView('system');
+        const sectorNum = parseInt(sector);
+        if (!isNaN(sectorNum)) {
+            moveSector(sectorNum);
+        }
+        setActiveView('sector'); // Switch back to sector view after selecting from map
     };
 
     const handleMouseDown = (e: React.MouseEvent, side: 'left' | 'right', type: 'move' | 'resize') => {
@@ -374,7 +386,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
                 <div className="shrink-0 h-[60px] flex items-end justify-center pb-1 relative z-30 pointer-events-auto">
                     <TopPanel
                         onLogout={onLogout}
-                        currentSector={currentSector}
+                        currentSector={player.currentSector.toString()}
                         onWarp={handleWarp}
                     />
                 </div>
@@ -385,7 +397,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
                         {/* Content */}
                         <CenterPanel
                             view={activeView}
-                            currentSector={currentSector}
+                            currentSector={player.currentSector.toString()}
                             onSystemSelect={handleSystemSelect}
                             onNavigate={handleNavigate}
                         />
