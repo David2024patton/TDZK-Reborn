@@ -237,9 +237,12 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ type, items, isActi
 };
 
 
+
+
+
 // --- Main TopPanel Component ---
 
-export const TopPanel: React.FC<TopPanelProps & { showDPad?: boolean }> = ({ onLogout, onToggleMobileMenu, currentSector, onWarp, onNavigate, showDPad }) => {
+export const TopPanel: React.FC<TopPanelProps & { isExpanded?: boolean }> = ({ onLogout, onToggleMobileMenu, currentSector, onWarp, onNavigate, isExpanded }) => {
   const { player } = useGame();
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [warpSector, setWarpSector] = useState('');
@@ -259,13 +262,13 @@ export const TopPanel: React.FC<TopPanelProps & { showDPad?: boolean }> = ({ onL
   };
 
   return (
-    <div className="w-full h-full relative flex items-center justify-center">
+    <div className="w-full h-full relative flex items-end justify-center pb-2">
 
       {/* Content area - Flex container for Notifications and Warp Drive */}
-      <div className={`relative w-full flex items-center justify-between px-4 md:px-8 pt-2 ${showDPad ? 'pl-[100px]' : ''} transition-all duration-300`}>
+      <div className="relative w-full flex items-center justify-between px-4 md:px-8">
 
         {/* Notifications Area */}
-        <div className="flex items-center gap-3">
+        <div className={`flex items-center gap-3 transition-all duration-500 ${isExpanded ? 'absolute right-1/2 translate-x-4 top-1/2 -translate-y-1/2' : 'relative'}`}>
           <NotificationItem
             type="combat"
             items={notifications.combat}
@@ -299,7 +302,7 @@ export const TopPanel: React.FC<TopPanelProps & { showDPad?: boolean }> = ({ onL
         </div>
 
         {/* Right Side: Admin & Warp */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 ml-auto">
           {player.isAdmin && (
             <button
               onClick={() => onNavigate?.('admin')}

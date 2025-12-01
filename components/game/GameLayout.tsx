@@ -379,12 +379,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
             {/* Background Texture Overlay */}
             <div className="absolute inset-0 opacity-10 pointer-events-none z-0" style={{ backgroundImage: 'radial-gradient(#112244 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
 
-            {/* Persistent D-Pad */}
-            {(!leftOpen || leftMode === 'float') && (
-                <div className="fixed top-2 left-2 z-50 scale-75 origin-top-left opacity-90 hover:opacity-100 transition-opacity">
-                    <DPad onCenterClick={() => handleNavigate('sector')} onMove={handleMove} />
-                </div>
-            )}
+            {/* Persistent D-Pad Removed */}
 
             {/* Edge Tabs */}
             {!leftOpen && (
@@ -419,12 +414,20 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
 
             {/* Center Column */}
             <div className="flex-1 flex flex-col min-w-0 z-10 relative w-full h-full min-h-0">
-                <div className="shrink-0 h-[60px] flex items-end justify-center pb-1 relative z-30 pointer-events-auto">
+                <div className={`shrink-0 flex items-end justify-center pb-1 relative z-30 pointer-events-auto transition-all duration-300 ${(!leftOpen) ? 'h-[120px]' : 'h-[60px]'}`}>
+
+                    {/* Conditional D-Pad when both panels closed */}
+                    {(!leftOpen) && (
+                        <div className="absolute top-1/2 -translate-y-1/2 left-4 z-50 origin-center opacity-90 hover:opacity-100 transition-opacity animate-in fade-in duration-300">
+                            <DPad onCenterClick={() => handleNavigate('sector')} onMove={handleMove} />
+                        </div>
+                    )}
+
                     <TopPanel
                         onLogout={onLogout}
                         currentSector={player.currentSector.toString()}
                         onWarp={handleWarp}
-                        showDPad={!leftOpen || leftMode === 'float'}
+                        isExpanded={!leftOpen}
                     />
                 </div>
                 <div className="flex-1 relative pl-1 pr-1 pb-1 overflow-hidden min-h-0">
@@ -453,8 +456,6 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
 
             {/* Render Right Panel (Floating or Mobile Docked) */}
             {(rightMode === 'float' || (window.innerWidth < 1024 && rightOpen)) && renderPanel('right')}
-
-
 
         </div>
     );
