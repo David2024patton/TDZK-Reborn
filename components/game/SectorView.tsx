@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ShipData } from './types';
 import { MOCK_SHIPS } from '../../data/mockData';
 import { GOODS } from '../../data/helpData';
+import { useGame } from '../../src/context/GameContext';
 
 // Modular Components
 import { SectorHeader } from './sector/SectorHeader';
@@ -36,6 +37,7 @@ const getStationName = (sector: number) => {
 };
 
 export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: ShipData) => void, onTriggerAction: (type: 'attack' | 'raid', target: any) => void, onOpenHelp?: (topic: string) => void }> = ({ currentSector, onExamine, onTriggerAction, onOpenHelp }) => {
+    const { player, gameState, systems, currentSectorData, message } = useGame();
     const [dockedLocation, setDockedLocation] = useState<'station' | 'port' | 'planet' | null>(null);
     const [planetMessages, setPlanetMessages] = useState({
         public: "Phoenix Property.\nClosed for: Non-Related to Phoenix and Production-buildings.",
@@ -54,16 +56,34 @@ export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: Sh
     }, [currentSector]);
 
     const currentShips = useMemo(() => {
-        return MOCK_SHIPS.filter(ship => {
-            if (dockedLocation === 'station') return ship.location === 'station';
-            if (dockedLocation === 'port') return ship.location === 'port';
-            if (dockedLocation === 'planet') return ship.location === 'planet';
-            return ship.location === 'sector';
-        });
-    }, [dockedLocation]);
+        if (!currentSectorData?.pilots) return [];
+
+        return currentSectorData.pilots
+            .filter((pilot: any) => pilot.username !== player.username) // Don't show self
+            .map((pilot: any) => ({
+                id: pilot.id,
+                playerName: pilot.username,
+                shipName: "Unknown Ship",
+                race: "Human", // Default
+                shipClass: "Scout", // Default
+                shipLevel: parseInt(pilot.pilot_level),
+                playerLevel: parseInt(pilot.pilot_level),
+                rating: "0",
+                isOnline: true,
+                location: 'sector'
+            }));
+    }, [currentSectorData, player.username]);
+
+    const sectorType = currentSectorData?.sector_type;
+
+    // Determine if the current sector is a station, port, or planet based on type
+    const isStation = sectorType === 'Station';
+    const isPort = sectorType === 'Port';
+    const isPlanet = sectorType === 'Planet';
+    // const isWormhole = sectorType === 'Wormhole'; // Not used yet
 
     const planetData = {
-        name: "Yuuzhan'tar",
+        name: `Planet ${baseSector}`,
         ownerName: "(0-0)",
         allianceName: "(Cartel-Hidden Force)",
         rating: "4145 / 2173",
@@ -122,22 +142,33 @@ export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: Sh
 
                 <div className={`w-full ${isDocked ? 'max-w-[1000px]' : 'max-w-[600px]'} space-y-4 flex flex-col items-center z-10 min-w-0 transition-[max-width] duration-300`}>
 
-                    <div className="w-full bg-[#001122] border border-[#003355] py-1.5 flex justify-center items-center relative overflow-hidden rounded-sm shadow-md shrink-0">
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#004488]"></div>
-                        <div className="absolute right-0 top-0 bottom-0 w-1 bg-[#004488]"></div>
-                        <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000000_10px,#000000_20px)] opacity-20 pointer-events-none"></div>
+                    {/* Notification Banner - Only visible if there is a message */}
+                    {message && (
+                        <div className="w-full bg-[#001122] border border-[#003355] py-1.5 flex justify-center items-center relative overflow-hidden rounded-sm shadow-md shrink-0 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#004488]"></div>
+                            <div className="absolute right-0 top-0 bottom-0 w-1 bg-[#004488]"></div>
 
-                        <span className="text-[#eccc66] font-bold text-[10px] tracking-wide relative z-10 flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#eccc66] animate-pulse"></span>
-                            Level 0 (2250ms Examine || 1250ms Attack)
-                        </span>
-                    </div>
+                            {/* Background Stripes */}
+                            <div className="absolute inset-0 opacity-10"
+                                style={{
+                                    backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, #004488 10px, #004488 20px)'
+                                }}
+                            ></div>
+
+                            <div className="relative z-10 flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#ccaa00] animate-pulse shadow-[0_0_5px_#ccaa00]"></div>
+                                <span className="text-[#ffcc00] font-bold text-[12px] tracking-wide text-shadow-sm">
+                                    {message}
+                                </span>
+                            </div>
+                        </div>
+                    )}
 
                     {!isDocked && (
                         <SectorNavigation currentSector={currentSector} />
                     )}
 
-                    {!isDocked && (
+                    {!isDocked && isPlanet && (
                         <PlanetDisplay
                             {...planetData}
                             onAttack={() => onTriggerAction('attack', planetData)}
@@ -145,7 +176,7 @@ export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: Sh
                         />
                     )}
 
-                    {!isDocked && (
+                    {!isDocked && isStation && (
                         <SectorEntity
                             {...stationData}
                             onRaid={() => onTriggerAction('raid', stationData)}
@@ -153,7 +184,7 @@ export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: Sh
                         />
                     )}
 
-                    {!isDocked && (
+                    {!isDocked && isPort && (
                         <SectorEntity
                             {...portData}
                             onRaid={() => onTriggerAction('raid', portData)}
@@ -203,14 +234,19 @@ export const SectorView: React.FC<{ currentSector: string, onExamine?: (ship: Sh
                         />
                     )}
 
-                    <ShipList
-                        ships={currentShips}
-                        header={shipListHeader}
-                        onExamine={onExamine}
-                    />
+                    {currentShips.length > 0 && (
+                        <ShipList
+                            ships={currentShips}
+                            header={shipListHeader}
+                            onExamine={onExamine}
+                        />
+                    )}
 
-                    {!isDocked && (
-                        <ForcesDisplay onAttack={(target) => onTriggerAction('attack', target || { name: "Sector Forces", level: "50" })} />
+                    {!isDocked && (currentSectorData?.forces?.length || 0) > 0 && (
+                        <ForcesDisplay
+                            forces={currentSectorData?.forces || []}
+                            onAttack={(target) => onTriggerAction('attack', target || { name: "Sector Forces", level: "50" })}
+                        />
                     )}
 
                     {!isDocked && (

@@ -17,7 +17,8 @@ const SECTOR_TYPES = {
     BOTH: 3,
     ASTEROID: 4,
     NEBULA: 5,
-    WORMHOLE: 6 // New Type
+    WORMHOLE: 6,
+    STATION: 7 // New Type
 };
 
 const AURA_TYPES = {
@@ -28,15 +29,15 @@ const AURA_TYPES = {
 };
 
 export const SystemMap: React.FC<SystemMapProps> = ({ currentSector, onNavigateToSector }) => {
-    const { player, systems, moveSector } = useGame();
+    const { player, systems, moveSector, warpSystem } = useGame();
     const [activeLayer, setActiveLayer] = useState<MapLayer>('SECTOR');
 
     const currentSectorNum = parseInt(currentSector);
     const baseSector = Math.floor(currentSectorNum / 100) * 100;
 
     // Find if this system has a wormhole
-    const currentSystemData = systems.find(s => s.id === player.currentSystem);
-    const wormholeSector = currentSystemData?.wormholeSector;
+    const currentSystemData = systems.find(s => s.id === parseInt(player.currentSystem));
+    const wormholes = currentSystemData?.wormholes || [];
 
     // Mock Data Generation (Deterministic based on sector number)
     const grid = useMemo(() => Array.from({ length: 100 }, (_, i) => {
@@ -50,14 +51,26 @@ export const SystemMap: React.FC<SystemMapProps> = ({ currentSector, onNavigateT
         let type = SECTOR_TYPES.EMPTY;
 
         // Explicitly set Wormhole if it matches
-        if (sectorNum === wormholeSector) {
+        if (wormholes.some(w => w.sector === sectorNum)) {
             type = SECTOR_TYPES.WORMHOLE;
+        } else if (sectorNum % 100 === 55) {
+            // Station at sector 55 (near center)
+            // We need a STATION type. For now, let's use BOTH as placeholder or add STATION.
+            // Let's add STATION to SECTOR_TYPES first.
+            // Actually, let's assume I'll add STATION type.
+            type = SECTOR_TYPES.STATION;
         } else {
-            if (r > 0.95) type = SECTOR_TYPES.BOTH;
-            else if (r > 0.9) type = SECTOR_TYPES.PLANET;
-            else if (r > 0.8) type = SECTOR_TYPES.PORT;
-            else if (r < 0.1) type = SECTOR_TYPES.ASTEROID;
-            else if (r < 0.2 && r > 0.1) type = SECTOR_TYPES.NEBULA;
+            // Planets: Deterministic ~5%
+            // (sectorNum * 123) % 100 < 5
+            if ((sectorNum * 123) % 100 < 5) {
+                type = SECTOR_TYPES.PLANET;
+            } else if (r > 0.85) {
+                type = SECTOR_TYPES.PORT;
+            } else if (r < 0.1) {
+                type = SECTOR_TYPES.ASTEROID;
+            } else if (r < 0.2 && r > 0.1) {
+                type = SECTOR_TYPES.NEBULA;
+            }
         }
 
         let aura = AURA_TYPES.NONE;
@@ -74,7 +87,7 @@ export const SystemMap: React.FC<SystemMapProps> = ({ currentSector, onNavigateT
             deaths,
             isCurrent
         };
-    }), [baseSector, currentSectorNum, wormholeSector]);
+    }), [baseSector, currentSectorNum, wormholes]);
 
     const handleSectorClick = (sector: number) => {
         // Basic adjacency check: +/- 1 or +/- 10 (grid movement)
@@ -103,6 +116,7 @@ export const SystemMap: React.FC<SystemMapProps> = ({ currentSector, onNavigateT
         switch (activeLayer) {
             case 'SECTOR':
                 if (cell.type === SECTOR_TYPES.WORMHOLE) return 'bg-[#440088] text-fuchsia-300 border-fuchsia-600 animate-pulse'; // Wormhole
+                if (cell.type === SECTOR_TYPES.STATION) return 'bg-[#004488] text-white border-blue-400 font-bold shadow-[0_0_10px_rgba(0,100,255,0.5)]'; // Station
                 if (cell.type === SECTOR_TYPES.PORT) return 'bg-[#333300] text-yellow-200 border-yellow-900'; // Yellowish
                 if (cell.type === SECTOR_TYPES.PLANET) return 'bg-[#003300] text-green-200 border-green-900'; // Greenish
                 if (cell.type === SECTOR_TYPES.BOTH) return 'bg-[#003333] text-cyan-200 border-cyan-900'; // Cyan
@@ -128,6 +142,7 @@ export const SystemMap: React.FC<SystemMapProps> = ({ currentSector, onNavigateT
     const getCellContent = (cell: typeof grid[0]) => {
         if (activeLayer === 'DEATHS' && cell.deaths > 0) return "☠";
         if (cell.type === SECTOR_TYPES.WORMHOLE) return "WH";
+        if (cell.type === SECTOR_TYPES.STATION) return "ST";
         return cell.sector;
     };
 
@@ -208,6 +223,37 @@ export const SystemMap: React.FC<SystemMapProps> = ({ currentSector, onNavigateT
                     </div>
                 </div>
             )}
+
+            {/* Wormhole Links */}
+            {/* Wormhole Links */}
+            {(() => {
+                if (currentSystemData && currentSystemData.wormholes) {
+                    const activeWormhole = currentSystemData.wormholes.find(w => w.sector === currentSectorNum);
+
+                    if (activeWormhole) {
+                        const target = systems.find(s => s.id === activeWormhole.targetSystemId);
+                        if (!target) return null;
+
+                        return (
+                            <div className="w-full max-w-[600px] mt-4 flex flex-col items-center animate-in fade-in slide-in-from-top-2 duration-500">
+                                <div className="text-[#00ccff] font-bold text-[12px] uppercase tracking-widest mb-2 drop-shadow-[0_0_5px_rgba(0,204,255,0.5)]">
+                                    Wormhole Connection
+                                </div>
+                                <div className="flex gap-4 justify-center">
+                                    <button
+                                        onClick={() => warpSystem(target.id.toString())}
+                                        className="bg-[#0d1520]/80 border border-[#004488] px-4 py-2 rounded-sm backdrop-blur-md text-[#00ccff] font-mono text-[12px] hover:text-white hover:bg-[#003366] hover:border-[#00ccff] hover:shadow-[0_0_15px_rgba(0,204,255,0.3)] transition-all group"
+                                    >
+                                        <span className="opacity-70 group-hover:opacity-100 mr-2">&gt;&gt;</span>
+                                        Warp to {target.name} [System {target.id}]
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    }
+                }
+                return null;
+            })()}
 
             {/* Port Status Table */}
             <div className="w-full max-w-[600px] mt-6 bg-[#050a10] border border-[#223344] shadow-lg">

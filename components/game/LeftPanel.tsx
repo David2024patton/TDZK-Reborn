@@ -6,9 +6,10 @@ import type { ViewType } from './GameLayout';
 interface LeftPanelProps {
   isFloating?: boolean;
   onNavigate?: (view: ViewType) => void;
+  onMove?: (direction: 'up' | 'down' | 'left' | 'right') => void;
 }
 
-export const LeftPanel: React.FC<LeftPanelProps> = ({ isFloating = false, onNavigate }) => {
+export const LeftPanel: React.FC<LeftPanelProps> = ({ isFloating = false, onNavigate, onMove }) => {
   return (
     <div className="flex flex-col h-full text-[10px] font-verdana select-none text-[#aaccff] overflow-hidden min-h-0">
 
@@ -22,7 +23,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({ isFloating = false, onNavi
               <span className="text-[#0055aa] font-bold text-[18px] tracking-[0.5em] opacity-60 [writing-mode:vertical-rl] rotate-180 drop-shadow-[0_0_5px_rgba(0,100,255,0.5)]">NAV</span>
             </div>
             <div>
-              <DPad onCenterClick={() => onNavigate?.('sector')} />
+              <DPad onCenterClick={() => onNavigate?.('sector')} onMove={onMove} />
             </div>
           </div>
         )}

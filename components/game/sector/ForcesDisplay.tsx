@@ -2,38 +2,22 @@ import React from 'react';
 import { StandardPlayerRow } from './ShipList';
 import { ShipData } from '../types';
 
-const DRONE_DATA: ShipData[] = [
-    {
-        id: 'drone-1',
+export const ForcesDisplay: React.FC<{ forces: any[], onAttack?: (target?: any) => void }> = ({ forces, onAttack }) => {
+    const droneShips: ShipData[] = forces.map(f => ({
+        id: f.id.toString(),
         location: 'sector',
-        shipName: 'Starkiller',
+        shipName: f.name,
         playerName: '',
-        guild: 'Sith',
-        race: '',
-        shipClass: 'Combat',
-        shipLevel: 0,
+        guild: f.stats?.guild || 'Unknown',
+        race: f.type,
+        shipClass: f.type,
+        shipLevel: f.stats?.level || 0,
         playerLevel: 0,
-        rating: '5',
+        rating: f.stats?.rating || '0',
         isOnline: true,
         status: []
-    },
-    {
-        id: 'drone-2',
-        location: 'sector',
-        shipName: 'Darth Vader',
-        playerName: '',
-        guild: 'Empire',
-        race: '',
-        shipClass: 'Scout',
-        shipLevel: 0,
-        playerLevel: 0,
-        rating: '12',
-        isOnline: true,
-        status: []
-    }
-];
+    }));
 
-export const ForcesDisplay: React.FC<{ onAttack?: (target?: any) => void }> = ({ onAttack }) => {
     return (
         <div className="flex flex-col w-full min-w-[500px] overflow-x-auto mt-4">
             <div className="bg-[#1a0505] border border-[#441111] border-b-0 py-1 text-center">
@@ -51,15 +35,21 @@ export const ForcesDisplay: React.FC<{ onAttack?: (target?: any) => void }> = ({
             </div>
 
             <div className="border border-[#660000] bg-black/50 shadow-lg rounded-b-sm overflow-hidden flex flex-col backdrop-blur-sm">
-                {DRONE_DATA.map(drone => (
-                    <StandardPlayerRow
-                        key={drone.id}
-                        data={drone}
-                        onExamine={() => onAttack?.(drone)}
-                        actionLabel="[Attack]"
-                        variant="compact"
-                    />
-                ))}
+                {droneShips.length > 0 ? (
+                    droneShips.map(drone => (
+                        <StandardPlayerRow
+                            key={drone.id}
+                            data={drone}
+                            onExamine={() => onAttack?.(drone)}
+                            actionLabel="[Attack]"
+                            variant="compact"
+                        />
+                    ))
+                ) : (
+                    <div className="p-4 text-center text-[#664444] italic text-[10px]">
+                        No forces detected in this sector.
+                    </div>
+                )}
             </div>
         </div>
     );

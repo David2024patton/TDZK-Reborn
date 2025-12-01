@@ -239,7 +239,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ type, items, isActi
 
 // --- Main TopPanel Component ---
 
-export const TopPanel: React.FC<TopPanelProps> = ({ onLogout, onToggleMobileMenu, currentSector, onWarp, onNavigate }) => {
+export const TopPanel: React.FC<TopPanelProps & { showDPad?: boolean }> = ({ onLogout, onToggleMobileMenu, currentSector, onWarp, onNavigate, showDPad }) => {
   const { player } = useGame();
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [warpSector, setWarpSector] = useState('');
@@ -262,7 +262,7 @@ export const TopPanel: React.FC<TopPanelProps> = ({ onLogout, onToggleMobileMenu
     <div className="w-full h-full relative flex items-center justify-center">
 
       {/* Content area - Flex container for Notifications and Warp Drive */}
-      <div className="relative w-full flex items-center justify-between px-4 md:px-8 pt-2">
+      <div className={`relative w-full flex items-center justify-between px-4 md:px-8 pt-2 ${showDPad ? 'pl-[100px]' : ''} transition-all duration-300`}>
 
         {/* Notifications Area */}
         <div className="flex items-center gap-3">
@@ -308,6 +308,13 @@ export const TopPanel: React.FC<TopPanelProps> = ({ onLogout, onToggleMobileMenu
               ADMIN
             </button>
           )}
+
+          <button
+            onClick={onLogout}
+            className="text-[#666666] font-bold text-[10px] uppercase border border-[#333333] px-2 py-1 rounded hover:bg-[#222222] hover:text-[#999999] transition-colors"
+          >
+            LOGOUT
+          </button>
 
           {/* Warp Drive Area */}
           <div className="flex items-center gap-2 bg-[#000000]/60 border border-[#003366] p-1 rounded-md shadow-lg backdrop-blur-sm">

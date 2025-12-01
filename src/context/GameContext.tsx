@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { SYSTEMS, SystemNode } from '../data/universe';
 
 interface PlayerState {
+    username: string;
     currentSector: string;
     currentSystem: string;
     turns: number;
@@ -20,11 +21,16 @@ interface GameContextType {
     player: PlayerState;
     gameState: GameState;
     systems: SystemNode[];
+    currentSectorData: any;
     moveSector: (targetSector: string) => void;
     warpSystem: (targetSystemId: string) => void;
     togglePause: () => void;
     randomizeRound: () => void;
     setAdmin: (isAdmin: boolean) => void;
+    login: (username: string, isAdmin: boolean) => void;
+    logout: () => void;
+    message: string | null;
+    addMessage: (msg: string) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -32,11 +38,12 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // Initial State
     const [player, setPlayer] = useState<PlayerState>({
-        currentSector: '11199',
-        currentSystem: '11',
-        turns: 1000,
+        username: '',
+        currentSector: '0',
+        currentSystem: '0',
+        turns: 0,
         isAdmin: false,
-        credits: 1000,
+        credits: 0,
         score: 0
     });
 
@@ -48,32 +55,51 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const [systems, setSystems] = useState<SystemNode[]>([]);
 
+    const [currentSectorData, setCurrentSectorData] = useState<any>(null);
+
+    const [message, setMessage] = useState<string | null>(null);
+    const messageTimer = useRef<NodeJS.Timeout | null>(null);
+
     // Fetch Initial Data
     useEffect(() => {
         // Fetch Systems
         fetch('/api/systems')
-            .then(res => res.json())
-            .then(data => setSystems(data))
-            .catch(err => console.error("Failed to fetch systems:", err));
-
-        // Fetch Player (hardcoded 'admin' for now)
-        fetch('/api/player/admin')
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) return;
-                setPlayer({
-                    currentSector: data.current_sector_number?.toString() || '0',
-                    currentSystem: data.current_system_id?.toString() || '0',
-                    turns: data.turns,
-                    isAdmin: data.is_admin,
-                    credits: parseInt(data.credits_on_hand),
-                    score: data.score
-                });
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                return res.json();
             })
-            .catch(err => console.error("Failed to fetch player:", err));
+            .then(data => setSystems(data))
+            .catch(err => {
+                console.error("Failed to fetch systems:", err);
+                setSystems([]); // Fallback to empty array
+            });
     }, []);
 
-    // Actions
+    // Fetch Sector Data when currentSector changes
+    useEffect(() => {
+        if (!player.currentSector || player.currentSector === '0') return;
+        fetch(`/api/sector/${player.currentSector}`)
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                if (!data.error) setCurrentSectorData(data);
+            })
+            .catch(err => console.error("Failed to fetch sector data:", err));
+    }, [player.currentSector]);
+
+    const addMessage = (msg: string) => {
+        if (messageTimer.current) clearTimeout(messageTimer.current);
+        setMessage(msg);
+        messageTimer.current = setTimeout(() => setMessage(null), 8000);
+    };
+
+    const clearMessages = () => {
+        if (messageTimer.current) clearTimeout(messageTimer.current);
+        setMessage(null);
+    };
+
     // Actions
     const moveSector = async (targetSector: string) => {
         if (gameState.isPaused && !player.isAdmin) return;
@@ -83,7 +109,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const res = await fetch('/api/move', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: 'admin', targetSectorNumber: parseInt(targetSector) })
+                body: JSON.stringify({ username: player.username, targetSectorNumber: parseInt(targetSector) })
             });
             const data = await res.json();
 
@@ -93,12 +119,19 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     currentSector: targetSector,
                     turns: prev.turns // Backend should update turns, but we need to refetch or decrement locally
                 }));
+                addMessage(`Moved to Sector ${targetSector}`);
                 // Ideally refetch player state here
             } else {
                 console.error("Move failed:", data.error);
+                let errorMsg = data.error;
+                if (errorMsg.includes('Sector does not exist')) {
+                    errorMsg = 'Sector does not exist';
+                }
+                addMessage(`Move failed: ${errorMsg}`);
             }
         } catch (err) {
             console.error("Move error:", err);
+            addMessage("Move error");
         }
     };
 
@@ -109,7 +142,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const res = await fetch('/api/warp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: 'admin', targetSystemId: parseInt(targetSystemId) })
+                body: JSON.stringify({ username: player.username, targetSystemId: parseInt(targetSystemId) })
             });
             const data = await res.json();
 
@@ -120,8 +153,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     currentSector: data.currentSector.toString(),
                     turns: prev.turns - 10
                 }));
+                addMessage(`Warped to System ${targetSystemId}`);
             } else {
                 console.error("Warp failed:", data.error);
+                addMessage(`Warp failed: ${data.error}`);
             }
         } catch (err) {
             console.error("Warp error:", err);
@@ -144,16 +179,75 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setPlayer(prev => ({ ...prev, isAdmin }));
     };
 
+    // Check for persistent session on mount
+    useEffect(() => {
+        const savedUser = localStorage.getItem('user_session');
+        if (savedUser) {
+            try {
+                const { username, isAdmin } = JSON.parse(savedUser);
+                login(username, isAdmin);
+            } catch (e) {
+                console.error("Failed to parse session", e);
+                localStorage.removeItem('user_session');
+            }
+        }
+    }, []);
+
+    const login = (username: string, isAdmin: boolean) => {
+        // Save session
+        localStorage.setItem('user_session', JSON.stringify({ username, isAdmin }));
+
+        setPlayer(prev => ({
+            ...prev,
+            username,
+            isAdmin
+        }));
+        // Optionally fetch full player data here
+        fetch(`/api/player/${username}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.error) {
+                    setPlayer(prev => ({
+                        ...prev,
+                        currentSector: data.current_sector_number?.toString() || '0',
+                        currentSystem: data.current_system_id?.toString() || '0',
+                        turns: data.turns,
+                        credits: parseInt(data.credits_on_hand),
+                        score: data.score
+                    }));
+                }
+            })
+            .catch(err => console.error("Failed to fetch player data on login:", err));
+    };
+
+    const logout = () => {
+        localStorage.removeItem('user_session');
+        setPlayer({
+            username: '',
+            currentSector: '0',
+            currentSystem: '0',
+            turns: 0,
+            isAdmin: false,
+            credits: 0,
+            score: 0
+        });
+    };
+
     return (
         <GameContext.Provider value={{
             player,
             gameState,
             systems,
+            currentSectorData,
             moveSector,
             warpSystem,
             togglePause,
             randomizeRound,
-            setAdmin
+            setAdmin,
+            login,
+            logout,
+            message,
+            addMessage
         }}>
             {children}
         </GameContext.Provider>

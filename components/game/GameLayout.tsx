@@ -17,7 +17,7 @@ export type ViewType = 'sector' | 'system' | 'galaxy' | 'help' | 'alliance' | 'a
 
 export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
     // Global Game State from Context
-    const { player, moveSector, warpSystem } = useGame();
+    const { player, moveSector, warpSystem, addMessage } = useGame();
 
     const [activeView, setActiveView] = useState<ViewType>('sector');
     // Removed local currentSector state, using player.currentSector
@@ -108,12 +108,9 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
     };
 
     const handleWarp = (sector: string) => {
-        // setCurrentSector(sector); // No longer needed, handled by context if we implement warp logic here
-        // For now, assume Warp input is just a sector jump for testing or admin?
-        // Or is it the "Warp To" box?
         const sectorNum = parseInt(sector);
         if (!isNaN(sectorNum)) {
-            moveSector(sectorNum);
+            moveSector(sector.toString());
         }
         setActiveView('sector');
     };
@@ -121,9 +118,9 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
     const handleSystemSelect = (sector: string) => {
         const sectorNum = parseInt(sector);
         if (!isNaN(sectorNum)) {
-            moveSector(sectorNum);
+            moveSector(sector.toString());
         }
-        setActiveView('sector'); // Switch back to sector view after selecting from map
+        setActiveView('sector');
     };
 
     const handleMouseDown = (e: React.MouseEvent, side: 'left' | 'right', type: 'move' | 'resize') => {
@@ -146,6 +143,45 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
             initialSize.current = { ...rightSize };
         }
     };
+
+    // Movement Logic
+    const handleMove = (direction: 'up' | 'down' | 'left' | 'right') => {
+        const current = parseInt(player.currentSector);
+        if (isNaN(current)) return;
+
+        // Boundary Checks
+        if (direction === 'left' && current % 10 === 0) {
+            addMessage("Cannot move past sector edge");
+            return;
+        }
+        if (direction === 'right' && current % 10 === 9) {
+            addMessage("Cannot move past sector edge");
+            return;
+        }
+
+        let target = current;
+        if (direction === 'up') target -= 10;
+        if (direction === 'down') target += 10;
+        if (direction === 'left') target -= 1;
+        if (direction === 'right') target += 1;
+
+        moveSector(target.toString());
+    };
+
+    // Keyboard Navigation
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (activeView !== 'sector') return; // Only move in sector view
+
+            if (e.key === 'ArrowUp') handleMove('up');
+            if (e.key === 'ArrowDown') handleMove('down');
+            if (e.key === 'ArrowLeft') handleMove('left');
+            if (e.key === 'ArrowRight') handleMove('right');
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [player.currentSector, activeView]);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -256,7 +292,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
 
         if (!isOpen) return null;
 
-        const panelProps = isLeft ? { onNavigate: handleNavigate } : {};
+        const panelProps = isLeft ? { onNavigate: handleNavigate, onMove: handleMove } : {};
 
         if (mode === 'docked') {
             return (
@@ -346,7 +382,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
             {/* Persistent D-Pad */}
             {(!leftOpen || leftMode === 'float') && (
                 <div className="fixed top-2 left-2 z-50 scale-75 origin-top-left opacity-90 hover:opacity-100 transition-opacity">
-                    <DPad onCenterClick={() => handleNavigate('sector')} />
+                    <DPad onCenterClick={() => handleNavigate('sector')} onMove={handleMove} />
                 </div>
             )}
 
@@ -388,6 +424,7 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
                         onLogout={onLogout}
                         currentSector={player.currentSector.toString()}
                         onWarp={handleWarp}
+                        showDPad={!leftOpen || leftMode === 'float'}
                     />
                 </div>
                 <div className="flex-1 relative pl-1 pr-1 pb-1 overflow-hidden min-h-0">
@@ -416,6 +453,8 @@ export const GameLayout: React.FC<GameLayoutProps> = ({ onLogout }) => {
 
             {/* Render Right Panel (Floating or Mobile Docked) */}
             {(rightMode === 'float' || (window.innerWidth < 1024 && rightOpen)) && renderPanel('right')}
+
+
 
         </div>
     );
